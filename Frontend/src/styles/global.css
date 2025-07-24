@@ -1,0 +1,197 @@
+/* src/styles/global.css */
+
+/* --- CSS Variables for Theming (Light & Dark Mode) --- */
+/* Light Theme */
+:root {
+    --bg-primary: #f8f9fa;
+    /* Light gray background for body */
+    --bg-secondary: #ffffff;
+    /* White background for cards/containers */
+    --text-color: #343a40;
+    /* Dark gray text */
+    --text-color-light: #6c757d;
+    /* Lighter gray text for labels, descriptions */
+    --text-color-dark: #212529;
+    /* Very dark gray for headings */
+
+    --primary-color: #007bff;
+    /* Main brand color (Blue) */
+    --primary-color-dark: #0056b3;
+    /* Darker primary for hover */
+    --primary-rgb: 0, 123, 255;
+    /* RGB for rgba() usage */
+
+    --success-color: #28a745;
+    /* Green for success actions/status */
+    --success-color-dark: #218838;
+    --danger-color: #dc3545;
+    /* Red for destructive actions/failed status */
+    --danger-color-dark: #c82333;
+    --info-color: #17a2b8;
+    /* Cyan for info actions/status */
+    --info-color-dark: #138496;
+    --secondary-button-bg: #e2e6ea;
+    /* Background for secondary buttons */
+    --secondary-button-hover-bg: #dae0e5;
+
+    --border-color: #ced4da;
+    /* General border color */
+    --border-color-light: #e9ecef;
+    /* Lighter border for table rows, dividers */
+    --shadow-small: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    /* Subtle shadow */
+    --shadow-medium: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    /* Deeper shadow */
+
+    /* Sidebar specific colors */
+    --sidebar-bg: #343a40;
+    /* Dark gray sidebar */
+    --text-on-sidebar: #f8f9fa;
+    /* Light text on dark sidebar */
+    --sidebar-item-hover-bg: #495057;
+    /* Slightly lighter gray for sidebar item hover */
+
+    /* Input & Table specific colors */
+    --input-bg: #ffffff;
+    --table-header-bg: #e9ecef;
+    --table-row-even-bg: #f8f9fa;
+    --table-row-hover-bg: #e2f2ff;
+    /* Light blue for table row hover */
+
+    /* Status badge colors */
+    --status-pending-bg: #fff3cd;
+    /* Light yellow */
+    --status-pending-color: #856404;
+    /* Dark yellow text */
+    --status-sent-bg: #d4edda;
+    /* Light green */
+    --status-sent-color: #155724;
+    /* Dark green text */
+    --status-failed-bg: #f8d7da;
+    /* Light red */
+    --status-failed-color: #721c24;
+    /* Dark red text */
+
+    /* General Styling */
+    --font-family-sans-serif: 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --border-radius: 0.25rem;
+    /* Small radius for inputs/buttons */
+    --border-radius-large: 0.5rem;
+    /* Larger radius for containers */
+    --border-radius-pill: 50rem;
+    /* For badges */
+    --transition-speed: 0.2s;
+}
+
+/* Dark Theme */
+[data-theme='dark'] {
+    --bg-primary: #212529;
+    --bg-secondary: #343a40;
+    --text-color: #e9ecef;
+    --text-color-light: #adb5bd;
+    --text-color-dark: #f8f9fa;
+
+    --primary-color: #66b3ff;
+    --primary-color-dark: #3399ff;
+    --primary-rgb: 102, 179, 255;
+
+    --success-color: #4CAF50;
+    --success-color-dark: #409243;
+    --danger-color: #ef5350;
+    --danger-color-dark: #e53935;
+    --info-color: #26c6da;
+    --info-color-dark: #00bcd4;
+    --secondary-button-bg: #6c757d;
+    --secondary-button-hover-bg: #5a6268;
+
+    --border-color: #495057;
+    --border-color-light: #6c757d;
+    --shadow-small: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+    --shadow-medium: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+
+    --sidebar-bg: #1a1e21;
+    --text-on-sidebar: #dee2e6;
+    --sidebar-item-hover-bg: #2b3034;
+
+    --input-bg: #495057;
+    --table-header-bg: #495057;
+    --table-row-even-bg: #3c4349;
+    --table-row-hover-bg: #4f5b66;
+
+    --status-pending-bg: #5f5416;
+    --status-pending-color: #ffeb3b;
+    --status-sent-bg: #285430;
+    --status-sent-color: #a2f0af;
+    --status-failed-bg: #6e272b;
+    --status-failed-color: #fca0a5;
+}
+
+
+/* --- Global Styles & Resets --- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family-sans-serif);
+    font-size: 1rem;
+    line-height: 1.6;
+    background-color: var(--bg-primary);
+    color: var(--text-color);
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+    min-height: 100vh;
+    /* Removed display: flex; from here as it will be handled by App.tsx's wrapper */
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--text-color-dark);
+    line-height: 1.2;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+/* Links */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color var(--transition-speed) ease;
+}
+
+a:hover {
+    color: var(--primary-color-dark);
+    text-decoration: underline;
+}
+
+/* Lists */
+ul {
+    list-style: none;
+}
+
+/* Horizontal Rule */
+hr {
+    border: none;
+    border-top: 1px solid var(--border-color-light);
+    margin: 2rem 0;
+}

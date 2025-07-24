@@ -1,0 +1,491 @@
+/* src/components/shared.module.css */
+
+/* --- Layout & Container --- */
+.appContainer {
+    /* Main container in App.tsx */
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: var(--text-on-sidebar);
+    padding: 1.5rem 1rem;
+    box-shadow: var(--shadow-medium);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar h2 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    /* Always white on dark sidebar */
+}
+
+.sidebarNav ul {
+    flex-grow: 1;
+}
+
+.sidebarNavItem {
+    display: block;
+    width: 100%;
+    padding: 0.8rem 1.25rem;
+    border: none;
+    border-radius: var(--border-radius);
+    background-color: transparent;
+    color: var(--text-on-sidebar);
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sidebarNavItem:hover {
+    background-color: var(--sidebar-item-hover-bg);
+    color: var(--text-on-sidebar);
+}
+
+.sidebarNavItem.active {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    /* Always white when active */
+    font-weight: 600;
+}
+
+.mainContent {
+    flex-grow: 1;
+    padding: 2.5rem;
+    /* Increased padding for main content */
+    background-color: var(--bg-primary);
+    overflow-y: auto;
+}
+
+.header {
+    background-color: var(--bg-secondary);
+    padding: 1.5rem 2rem;
+    box-shadow: var(--shadow-small);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    /* Increased margin-bottom */
+    border-radius: var(--border-radius-large);
+    transition: background-color var(--transition-speed) ease;
+}
+
+.header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+}
+
+.themeToggle {
+    background: none;
+    border: none;
+    color: var(--text-color-dark);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color var(--transition-speed) ease, background-color var(--transition-speed) ease;
+    padding: 0.5rem;
+    border-radius: 50%;
+}
+
+.themeToggle:hover {
+    color: var(--primary-color);
+    background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+/* --- Component-Specific Styles (Generalized) --- */
+.formContainer {
+    background-color: var(--bg-secondary);
+    padding: 2.5rem;
+    border-radius: var(--border-radius-large);
+    box-shadow: var(--shadow-small);
+    max-width: 900px;
+    margin: 0 auto 2.5rem auto;
+    /* Center and add bottom margin */
+    color: var(--text-color);
+}
+
+.formGroup {
+    margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-weight: 500;
+    color: var(--text-color-light);
+}
+
+.formControl {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: border-color var(--transition-speed) ease-in-out, box-shadow var(--transition-speed) ease-in-out, background-color var(--transition-speed) ease;
+}
+
+.formControl:focus {
+    outline: none;
+    border-color: var(--primary-color-dark);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+}
+
+.formControl::placeholder {
+    color: var(--text-color-light);
+}
+
+/* Buttons */
+.btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color var(--transition-speed) ease-in-out, transform 0.1s ease-in-out, opacity 0.2s ease-in-out;
+    text-align: center;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+.btn:not(:disabled):active {
+    transform: translateY(0);
+}
+
+.btnPrimary {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.btnPrimary:not(:disabled):hover {
+    background-color: var(--primary-color-dark);
+}
+
+.btnSecondary {
+    background-color: var(--secondary-button-bg);
+    color: var(--text-color-dark);
+    border: 1px solid var(--border-color);
+}
+
+.btnSecondary:not(:disabled):hover {
+    background-color: var(--secondary-button-hover-bg);
+}
+
+.btnSuccess {
+    background-color: var(--success-color);
+    color: #ffffff;
+}
+
+.btnSuccess:not(:disabled):hover {
+    background-color: var(--success-color-dark);
+}
+
+.btnDanger {
+    background-color: var(--danger-color);
+    color: #ffffff;
+}
+
+.btnDanger:not(:disabled):hover {
+    background-color: var(--danger-color-dark);
+}
+
+.btnInfo {
+    background-color: var(--info-color);
+    color: #ffffff;
+}
+
+.btnInfo:not(:disabled):hover {
+    background-color: var(--info-color-dark);
+}
+
+/* Table Styles */
+.tableResponsive {
+    overflow-x: auto;
+}
+
+.tableWrapper {
+    border-radius: var(--border-radius-large);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-small);
+}
+
+.dataTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.dataTable th,
+.dataTable td {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.dataTable th {
+    background-color: var(--table-header-bg);
+    color: var(--text-color-dark);
+    font-weight: 600;
+}
+
+.dataTable tbody tr:nth-child(even) {
+    background-color: var(--table-row-even-bg);
+}
+
+.dataTable tbody tr:hover {
+    background-color: var(--table-row-hover-bg);
+}
+
+/* Status Badges */
+.statusBadge {
+    display: inline-block;
+    padding: 0.4em 0.8em;
+    border-radius: var(--border-radius-pill);
+    font-size: 0.85em;
+    font-weight: 600;
+    text-transform: capitalize;
+    min-width: 80px;
+    text-align: center;
+}
+
+.statusPending {
+    background-color: var(--status-pending-bg);
+    color: var(--status-pending-color);
+}
+
+.statusSent {
+    background-color: var(--status-sent-bg);
+    color: var(--status-sent-color);
+}
+
+.statusFailed {
+    background-color: var(--status-failed-bg);
+    color: var(--status-failed-color);
+}
+
+.statusActive {
+    /* For SenderManager isActive status */
+    background-color: var(--status-sent-bg);
+    color: var(--status-sent-color);
+}
+
+.statusInactive {
+    /* For SenderManager isActive status */
+    background-color: var(--status-failed-bg);
+    color: var(--status-failed-color);
+}
+
+/* Message Boxes */
+.messageBox {
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    text-align: center;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.messageBox.success {
+    background-color: var(--status-sent-bg);
+    color: var(--status-sent-color);
+    border: 1px solid var(--success-color);
+}
+
+.messageBox.error {
+    background-color: var(--status-failed-bg);
+    color: var(--status-failed-color);
+    border: 1px solid var(--danger-color);
+}
+
+/* CampaignSender specific template list */
+.templateList {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    background-color: var(--input-bg);
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.templateList p {
+    text-align: center;
+    color: var(--text-color-light);
+    font-style: italic;
+    padding: 1rem 0;
+}
+
+.templateItem {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.7rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--border-color-light);
+}
+
+.templateItem:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.templateItem input[type="checkbox"] {
+    margin-right: 0.8rem;
+    min-width: 18px;
+    min-height: 18px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+.templateItem label {
+    margin-bottom: 0;
+    font-weight: normal;
+    cursor: pointer;
+    flex-grow: 1;
+    color: var(--text-color);
+}
+
+.templateItem label em {
+    color: var(--text-color-light);
+    font-size: 0.9em;
+}
+
+/* Utility Classes */
+.textCenter {
+    text-align: center;
+}
+
+.textDanger {
+    color: var(--danger-color);
+}
+
+.textSuccess {
+    color: var(--success-color);
+}
+
+.title {
+    /* Global title for main sections */
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color-dark);
+    margin-bottom: 2rem;
+    /* Adjusted margin for main titles */
+    text-align: center;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .appContainer {
+        flex-direction: column;
+        /* Stack sidebar and main content */
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        /* No longer sticky on mobile */
+        box-shadow: none;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color-light);
+    }
+
+    .sidebar h2 {
+        display: none;
+        /* Hide sidebar title on small screens */
+    }
+
+    .sidebarNav ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .sidebarNavItem {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9rem;
+        flex-grow: 1;
+        /* Allow items to grow to fill space */
+        justify-content: center;
+        /* Center text and icon */
+    }
+
+    .sidebarNavItem svg {
+        margin-right: 0.5rem;
+    }
+
+    .mainContent {
+        padding: 1.5rem;
+        /* Reduced padding on mobile */
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .header h2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .formContainer {
+        padding: 1.5rem;
+        margin: 0 auto 1.5rem auto;
+    }
+
+    .dataTable th,
+    .dataTable td {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+}
