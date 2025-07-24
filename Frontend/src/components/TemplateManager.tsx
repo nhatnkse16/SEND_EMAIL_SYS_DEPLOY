@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import styles from './TemplateManager.module.css';
 import shared from './shared.module.css';
 
 // Toast component
@@ -51,7 +50,6 @@ const TemplateManager = () => {
     // State cho tab và tìm kiếm/lọc
     const [activeTab, setActiveTab] = useState<'list' | 'add'>('list');
     const [search, setSearch] = useState('');
-    const [filter, setFilter] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 5;
 
@@ -123,7 +121,7 @@ const TemplateManager = () => {
         return (
             t.name.toLowerCase().includes(keyword) ||
             t.subject.toLowerCase().includes(keyword)
-        ) && (filter ? t.name.toLowerCase().includes(filter.toLowerCase()) : true);
+        ) && (true); // Xóa setFilter
     });
     // Phân trang
     const totalPages = Math.ceil(filteredTemplates.length / pageSize);

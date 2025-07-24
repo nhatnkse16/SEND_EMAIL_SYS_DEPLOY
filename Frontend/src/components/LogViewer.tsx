@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import styles from './LogViewer.module.css'; // Sử dụng file CSS cho CampaignSender
 import shared from './shared.module.css';
 
 // Định nghĩa kiểu dữ liệu cho một đối tượng log

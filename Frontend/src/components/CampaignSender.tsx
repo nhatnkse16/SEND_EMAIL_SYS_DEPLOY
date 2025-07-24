@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import styles from './CampaignSender.module.css'; // Đảm bảo import đúng
-import shared from './shared.module.css';
+import shared from './shared.module.css'; // Đảm bảo import đúng
 
 // Định nghĩa kiểu dữ liệu cho một đối tượng Template
 interface ITemplate {
@@ -54,7 +53,6 @@ const CampaignSender = () => {
     const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
     // Thêm state cho search, filter, phân trang
     const [search, setSearch] = useState('');
-    const [filter, setFilter] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 5;
 
@@ -241,7 +239,7 @@ const CampaignSender = () => {
         return (
             t.name.toLowerCase().includes(keyword) ||
             t.subject.toLowerCase().includes(keyword)
-        ) && (filter ? t.name.toLowerCase().includes(filter.toLowerCase()) : true);
+        ) && (true); // Xoá setFilter
     });
     // Phân trang
     const totalPages = Math.ceil(filteredTemplates.length / pageSize);

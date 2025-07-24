@@ -1,15 +1,16 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+require('colors'); // Đảm bảo đã cài đặt 'npm install colors'
 
-dotenv.config();
+dotenv.config(); // Tải các biến môi trường từ .env
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/EMAIL_MARKETING_SYS_DB');
+        await mongoose.connect('mongodb+srv://nguyenkimnhat0110:OM3NdAFK5Lgwp6XX@sendemailmarketingsys.9m3qi5c.mongodb.net/?retryWrites=true&w=majority&appName=SendEmailMarketingSys');
         console.log('MongoDB Connected...'.blue.bold);
     } catch (err) {
-        console.error(err.message);
-        process.exit(1); // Thoát tiến trình nếu không kết nối được
+        console.error(`Error: ${err.message}`.red.bold);
+        process.exit(1); // Thoát ứng dụng nếu không kết nối được
     }
 };
 

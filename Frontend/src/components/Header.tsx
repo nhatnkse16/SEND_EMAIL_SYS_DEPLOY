@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 import styles from './shared.module.css'; // Sử dụng shared.module.css cho style chuyên nghiệp
 

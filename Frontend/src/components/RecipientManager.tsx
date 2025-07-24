@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import styles from './RecipientManager.module.css'; // Sử dụng file CSS dùng chung
 import shared from './shared.module.css';
 
 // Định nghĩa kiểu dữ liệu cho Người nhận
@@ -38,7 +37,6 @@ const RecipientManager = () => {
         );
     });
     const totalPages = Math.ceil(filteredRecipients.length / pageSize);
-    const pagedRecipients = filteredRecipients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     // Tách danh sách recipient theo trạng thái
     const pendingRecipients = filteredRecipients.filter(r => r.status === 'pending');

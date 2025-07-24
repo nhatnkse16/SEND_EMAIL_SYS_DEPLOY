@@ -1,7 +1,6 @@
 // components/SenderManager.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import styles from './SenderManager.module.css'; // Sử dụng file CSS dùng chung
 import shared from './shared.module.css';
 
 // Định nghĩa kiểu dữ liệu cho một đối tượng Sender
@@ -191,7 +190,6 @@ const SenderManager = () => {
         );
     });
     const totalPages = Math.ceil(filteredSenders.length / pageSize);
-    const pagedSenders = filteredSenders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     // Tách danh sách sender theo trạng thái
     const activeSenders = filteredSenders.filter(s => s.isActive);
