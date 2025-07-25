@@ -4,8 +4,15 @@ const { Readable } = require('stream'); // Dùng để tạo stream từ buffer
 
 const getRecipients = async (req, res) => {
     try {
-        const recipients = await Recipient.find({}).sort({ createdAt: -1 }).limit(500);
-        res.status(200).json(recipients);
+        const { status, page = 1, pageSize = 100 } = req.query;
+        const filter = status ? { status } : {};
+        const skip = (parseInt(page) - 1) * parseInt(pageSize);
+        const total = await Recipient.countDocuments(filter);
+        const recipients = await Recipient.find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(pageSize));
+        res.status(200).json({ recipients, total });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi khi lấy danh sách người nhận' });
     }

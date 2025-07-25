@@ -5,6 +5,7 @@ const Sender = require('../models/senderModel');
 const Recipient = require('../models/recipientModel');
 const Log = require('../models/logModel');
 const Template = require('../models/templateModel');
+const Campaign = require('../models/campaignModel');
 
 // Hàm tạo độ trễ ngẫu nhiên giữa các lần gửi
 const getRandomDelay = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
@@ -133,8 +134,14 @@ const sendCampaign = async (req, res) => {
         let totalFailures = 0;
         const logs = [];
         let recipientIndex = 0;
+        // Trong sendCampaign, khi bắt đầu, set trạng thái job là running
+        jobStatusMap[jobId] = 'running';
         // Lặp cho đến khi hết recipient hoặc tất cả sender đều finished
         while (recipientIndex < recipients.length) {
+            // Kiểm tra trạng thái job
+            while (jobStatusMap[jobId] === 'paused') {
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Chờ 1s rồi kiểm tra lại
+            }
             let allSenderFinished = senderStates.every(s => s.finished);
             if (allSenderFinished) break;
             for (let s = 0; s < senderStates.length; s++) {
@@ -156,6 +163,12 @@ const sendCampaign = async (req, res) => {
                 for (let b = 0; b < canSend; b++) {
                     if (recipientIndex >= recipients.length) break;
                     if (totalLimit !== undefined && totalSuccesses >= totalLimit) break;
+
+                    // KIỂM TRA PAUSED NGAY TRƯỚC MỖI LẦN GỬI
+                    while (jobStatusMap[jobId] === 'paused') {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+
                     const recipient = recipients[recipientIndex];
                     try {
                         logs.push(`[${sender.email}] Đang gửi mail cho ${recipient.email}`);
@@ -178,6 +191,8 @@ const sendCampaign = async (req, res) => {
                         });
                         recipient.status = 'sent';
                         await recipient.save();
+                        // Tăng sentCount cho sender cả khi gửi thành công
+                        sender.sentCount++;
                         senderState.sentCount++;
                         await sender.save();
                         // Tăng sentCount cho template đã dùng
@@ -205,6 +220,10 @@ const sendCampaign = async (req, res) => {
                     } catch (error) {
                         recipient.status = 'failed';
                         await recipient.save();
+                        // Tăng sentCount cho sender cả khi gửi lỗi
+                        sender.sentCount++;
+                        senderState.sentCount++;
+                        await sender.save();
                         const errorMessage = error.response && error.response.data ? error.response.data : error.message;
                         logs.push(`[${sender.email}] Lỗi gửi tới ${recipient.email}: ${errorMessage}`);
                         sendSseLog(jobId, `[${sender.email}] Lỗi gửi tới ${recipient.email}: ${errorMessage}`);
@@ -240,6 +259,27 @@ const sendCampaign = async (req, res) => {
     }
 };
 
+// Thêm biến toàn cục lưu trạng thái job
+const jobStatusMap = {};
+
+// API tạm dừng job
+const pauseCampaign = async (req, res) => {
+    const { jobId } = req.body;
+    if (!jobId) return res.status(400).json({ message: 'Thiếu jobId' });
+    jobStatusMap[jobId] = 'paused';
+    console.log(`[${jobId}] ĐÃ TẠM DỪNG CHIẾN DỊCH!`);
+    res.json({ message: 'Đã tạm dừng chiến dịch', jobId });
+};
+
+// API tiếp tục job
+const resumeCampaign = async (req, res) => {
+    const { jobId } = req.body;
+    if (!jobId) return res.status(400).json({ message: 'Thiếu jobId' });
+    jobStatusMap[jobId] = 'running';
+    console.log(`[${jobId}] ĐÃ TIẾP TỤC CHIẾN DỊCH!`);
+    res.json({ message: 'Đã tiếp tục chiến dịch', jobId });
+};
+
 // --- SSE log realtime ---
 const sseClients = new Map(); // jobId -> res
 
@@ -266,4 +306,9 @@ function sendSseLog(jobId, log) {
     }
 }
 
-module.exports = { sendCampaign, campaignLogStream };
+module.exports = {
+    sendCampaign,
+    campaignLogStream,
+    pauseCampaign,
+    resumeCampaign
+};

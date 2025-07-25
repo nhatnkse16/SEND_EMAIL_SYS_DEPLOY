@@ -215,6 +215,59 @@
     flex: 1;
 }
 
+.campaign-split-container {
+    width: 100%;
+    height: 80vh;
+    min-height: 400px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: row;
+    background: #181c24;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    position: relative;
+}
+
+.campaign-splitter {
+    background: #232733;
+    transition: background 0.2s;
+    z-index: 10;
+}
+
+.campaign-splitter:hover,
+.campaign-splitter:active {
+    background: #44495a;
+}
+
+/* Custom scrollbar for dark panels */
+.campaign-split-container,
+.campaign-split-container * {
+    scrollbar-width: thin;
+    scrollbar-color: #44495a #232733;
+}
+
+.campaign-split-container ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+    background: #232733;
+    border-radius: 8px;
+}
+
+.campaign-split-container ::-webkit-scrollbar-thumb {
+    background: #44495a;
+    border-radius: 8px;
+    min-height: 30px;
+}
+
+.campaign-split-container ::-webkit-scrollbar-thumb:hover {
+    background: #5a5f73;
+}
+
+.campaign-split-container ::-webkit-scrollbar-corner {
+    background: #232733;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .formContainer {
@@ -251,6 +304,12 @@
 
     .template-item label em {
         font-size: 0.8rem;
+    }
+
+    .campaign-split-container {
+        flex-direction: column;
+        height: 80vh;
+        min-height: 320px;
     }
 }
 

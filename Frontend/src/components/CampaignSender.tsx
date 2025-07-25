@@ -77,6 +77,9 @@ const CampaignSender = () => {
     // Thêm state cho preview HTML
     const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
+    // Thêm state lưu trạng thái tạm dừng
+    const [isPaused, setIsPaused] = useState(false);
+
     // Lấy danh sách template từ backend khi component được tải lần đầu
     useEffect(() => {
         const fetchTemplates = async () => {
@@ -233,6 +236,22 @@ const CampaignSender = () => {
         }
     };
 
+    // Hàm tạm dừng/tiếp tục
+    const handlePauseResume = async () => {
+        if (!logViewers.length) return;
+        const jobId = logViewers[logViewers.length - 1].jobId;
+        if (!jobId) return;
+        if (!isPaused) {
+            // Gọi API pause
+            await axios.post('http://localhost:5000/api/campaign/pause', { jobId });
+            setIsPaused(true);
+        } else {
+            // Gọi API resume
+            await axios.post('http://localhost:5000/api/campaign/resume', { jobId });
+            setIsPaused(false);
+        }
+    };
+
     // Lọc và tìm kiếm template
     const filteredTemplates = templates.filter(t => {
         const keyword = search.toLowerCase();
@@ -276,194 +295,354 @@ const CampaignSender = () => {
         setLogViewers(viewers => viewers.filter(v => v.jobId !== jobId));
     };
 
+    // State cho chia layout kéo
+    const [isVertical, setIsVertical] = useState(window.innerWidth <= 768);
+    const [split, setSplit] = useState(50); // % panel trái (hoặc trên nếu dọc)
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    const dragging = React.useRef(false);
+
+    // Responsive: update isVertical khi resize
+    useEffect(() => {
+        const handleResize = () => {
+            setIsVertical(window.innerWidth <= 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Xử lý kéo
+    const onDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+        dragging.current = true;
+        document.body.style.userSelect = 'none';
+    };
+    const onDragEnd = () => {
+        dragging.current = false;
+        document.body.style.userSelect = '';
+    };
+    const onDrag = (e: MouseEvent | TouchEvent) => {
+        if (!dragging.current || !containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        let percent = split;
+        if (isVertical) {
+            const clientY = (e as TouchEvent).touches ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
+            percent = ((clientY - rect.top) / rect.height) * 100;
+        } else {
+            const clientX = (e as TouchEvent).touches ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
+            percent = ((clientX - rect.left) / rect.width) * 100;
+        }
+        percent = Math.max(15, Math.min(85, percent));
+        setSplit(percent);
+    };
+    useEffect(() => {
+        const move = (e: MouseEvent | TouchEvent) => onDrag(e);
+        const up = () => onDragEnd();
+        if (dragging.current) {
+            window.addEventListener('mousemove', move);
+            window.addEventListener('touchmove', move);
+            window.addEventListener('mouseup', up);
+            window.addEventListener('touchend', up);
+        }
+        return () => {
+            window.removeEventListener('mousemove', move);
+            window.removeEventListener('touchmove', move);
+            window.removeEventListener('mouseup', up);
+            window.removeEventListener('touchend', up);
+        };
+    });
+
     return (
-        <div className={shared.formContainer} style={{ width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
-            <h2 className={shared.title}>Cấu hình Chiến dịch Email</h2>
-            {/* Hiển thị thông báo */}
-            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-            {message && isError && (
-                <div className={
-                    `${shared.messageBox} error`
-                }>
-                    {message}
-                </div>
-            )}
-            {/* --- Phần cấu hình chung --- */}
-            <div className={shared.formGroup}>
-                <label htmlFor="brandName">Tên Thương hiệu / Người gửi</label>
-                <input
-                    type="text"
-                    id="brandName"
-                    value={brandName}
-                    onChange={e => { setBrandName(e.target.value); localStorage.setItem('campaign_brandName', e.target.value); }}
-                    className={shared.formControl}
-                    placeholder="Ví dụ: Công ty XYZ"
-                />
-            </div>
-            <div className={shared.formGroup}>
-                <label htmlFor="concurrencyLimit">Giới hạn gửi đồng thời (Concurrency Limit)</label>
-                <input
-                    type="number"
-                    id="concurrencyLimit"
-                    value={concurrencyLimit}
-                    onChange={e => { setConcurrencyLimit(Number(e.target.value)); localStorage.setItem('campaign_concurrencyLimit', e.target.value); }}
-                    className={shared.formControl}
-                    min={1}
-                />
-            </div>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-                <div className={shared.formGroup} style={{ flex: 1 }}>
-                    <label htmlFor="minDelay">Độ trễ tối thiểu (giây)</label>
-                    <input
-                        type="number"
-                        id="minDelay"
-                        value={minDelay}
-                        onChange={e => { setMinDelay(Number(e.target.value)); localStorage.setItem('campaign_minDelay', e.target.value); }}
-                        className={shared.formControl}
-                        min={0}
-                    />
-                </div>
-                <div className={shared.formGroup} style={{ flex: 1 }}>
-                    <label htmlFor="maxDelay">Độ trễ tối đa (giây)</label>
-                    <input
-                        type="number"
-                        id="maxDelay"
-                        value={maxDelay}
-                        onChange={e => { setMaxDelay(Number(e.target.value)); localStorage.setItem('campaign_maxDelay', e.target.value); }}
-                        className={shared.formControl}
-                        min={minDelay}
-                    />
-                </div>
-            </div>
-            {/* --- Phần chọn Template dạng table --- */}
-            <div className={shared.formGroup}>
-                <label>Chọn Mẫu Email gửi ngẫu nhiên</label>
-                <div style={{ marginBottom: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div ref={containerRef} className="campaign-split-container" style={{
+            display: 'flex',
+            flexDirection: isVertical ? 'column' : 'row',
+            width: '100%',
+            height: '80vh',
+            minHeight: 400,
+            maxHeight: '90vh',
+            background: '#181c24',
+            borderRadius: 12,
+            boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+            overflow: 'hidden',
+            position: 'relative',
+        }}>
+            {/* Panel trái hoặc trên */}
+            <div style={{
+                flexBasis: isVertical ? `${split}%` : undefined,
+                width: isVertical ? '100%' : `${split}%`,
+                height: isVertical ? `${split}%` : '100%',
+                minWidth: isVertical ? undefined : 180,
+                minHeight: isVertical ? 180 : undefined,
+                overflow: 'auto',
+                transition: 'flex-basis 0.2s, width 0.2s, height 0.2s',
+                // background: '#fff',
+                padding: isVertical ? '1.2rem 1.2rem 0.5rem 1.2rem' : '2.5rem',
+                boxSizing: 'border-box',
+            }}>
+                {/* Toàn bộ phần form cấu hình cũ */}
+                <h2 className={shared.title}>Cấu hình Chiến dịch Email</h2>
+                {/* Hiển thị thông báo */}
+                {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+                {message && isError && (
+                    <div className={
+                        `${shared.messageBox} error`
+                    }>
+                        {message}
+                    </div>
+                )}
+                {/* --- Phần cấu hình chung --- */}
+                <div className={shared.formGroup}>
+                    <label htmlFor="brandName">Tên Thương hiệu / Người gửi</label>
                     <input
                         type="text"
-                        placeholder="Tìm kiếm theo tên hoặc tiêu đề..."
-                        value={search}
-                        onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                        id="brandName"
+                        value={brandName}
+                        onChange={e => { setBrandName(e.target.value); localStorage.setItem('campaign_brandName', e.target.value); }}
                         className={shared.formControl}
-                        style={{ maxWidth: 300 }}
+                        placeholder="Ví dụ: Công ty XYZ"
                     />
                 </div>
-                <div className={shared.tableResponsive} style={{ width: '100%', overflowX: 'auto' }}>
-                    <div className={shared.tableWrapper} style={{ minWidth: 500, width: '100%' }}>
-                        <table className={shared.dataTable} style={{ minWidth: 500, width: '100%' }}>
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <input
-                                            type="checkbox"
-                                            checked={allChecked}
-                                            onChange={handleCheckAll}
-                                            style={{ width: 22, height: 22, accentColor: '#007bff', cursor: 'pointer' }}
-                                            title="Chọn tất cả mẫu trên trang này"
-                                        />
-                                    </th>
-                                    <th>Tên mẫu</th>
-                                    <th>Tiêu đề</th>
-                                    <th>Số lần đã gửi</th>
-                                    <th></th> {/* Cột cho nút xem trước */}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sortedTemplates.length > 0 ? (
-                                    sortedTemplates.map(template => {
-                                        const checked = selectedTemplateIds.includes(template._id);
-                                        return (
-                                            <tr
-                                                key={template._id}
-                                                style={{
-                                                    background: checked ? 'rgba(0,123,255,0.08)' : undefined,
-                                                    transition: 'background 0.2s'
-                                                }}
-                                            >
-                                                <td>
-                                                    <input
-                                                        type="checkbox"
-                                                        id={template._id}
-                                                        value={template._id}
-                                                        onChange={() => handleCheckboxChange(template._id)}
-                                                        checked={checked}
-                                                        style={{ width: 22, height: 22, accentColor: '#007bff', cursor: 'pointer' }}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <label htmlFor={template._id} style={{ cursor: 'pointer' }}>{template.name}</label>
-                                                </td>
-                                                <td>{template.subject}</td>
-                                                <td>{template.sentCount ?? 0}</td>
-                                                <td>
-                                                    <button
-                                                        type="button"
-                                                        className={shared.btnInfo}
-                                                        style={{ padding: 0, background: 'none', border: 'none', boxShadow: 'none', color: '#6f42c1', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}
-                                                        onClick={() => setPreviewHtml(template.htmlBody)}
-                                                        title="Xem trước nội dung HTML"
-                                                    >
-                                                        👁️
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                ) : (
-                                    <tr>
-                                        <td colSpan={3} className={shared.textDanger} style={{ textAlign: 'center' }}>
-                                            Không có mẫu email nào phù hợp.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                <div className={shared.formGroup}>
+                    <label htmlFor="concurrencyLimit">Giới hạn gửi đồng thời (Concurrency Limit)</label>
+                    <input
+                        type="number"
+                        id="concurrencyLimit"
+                        value={concurrencyLimit}
+                        onChange={e => { setConcurrencyLimit(Number(e.target.value)); localStorage.setItem('campaign_concurrencyLimit', e.target.value); }}
+                        className={shared.formControl}
+                        min={1}
+                    />
+                </div>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div className={shared.formGroup} style={{ flex: 1 }}>
+                        <label htmlFor="minDelay">Độ trễ tối thiểu (giây)</label>
+                        <input
+                            type="number"
+                            id="minDelay"
+                            value={minDelay}
+                            onChange={e => { setMinDelay(Number(e.target.value)); localStorage.setItem('campaign_minDelay', e.target.value); }}
+                            className={shared.formControl}
+                            min={0}
+                        />
+                    </div>
+                    <div className={shared.formGroup} style={{ flex: 1 }}>
+                        <label htmlFor="maxDelay">Độ trễ tối đa (giây)</label>
+                        <input
+                            type="number"
+                            id="maxDelay"
+                            value={maxDelay}
+                            onChange={e => { setMaxDelay(Number(e.target.value)); localStorage.setItem('campaign_maxDelay', e.target.value); }}
+                            className={shared.formControl}
+                            min={minDelay}
+                        />
                     </div>
                 </div>
-                {/* Phân trang */}
-                {totalPages > 1 && (
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
-                        <button
-                            type="button"
-                            className={shared.btn}
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        >
-                            Trang trước
-                        </button>
-                        <span style={{ alignSelf: 'center' }}>Trang {currentPage} / {totalPages}</span>
-                        <button
-                            type="button"
-                            className={shared.btn}
-                            disabled={currentPage === totalPages}
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        >
-                            Trang sau
-                        </button>
+                {/* --- Phần chọn Template dạng table --- */}
+                <div className={shared.formGroup}>
+                    <label>Chọn Mẫu Email gửi ngẫu nhiên</label>
+                    <div style={{ marginBottom: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo tên hoặc tiêu đề..."
+                            value={search}
+                            onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                            className={shared.formControl}
+                            style={{ maxWidth: 300 }}
+                        />
+                    </div>
+                    <div className={shared.tableResponsive} style={{ width: '100%', overflowX: 'auto' }}>
+                        <div className={shared.tableWrapper} style={{ minWidth: 500, width: '100%' }}>
+                            <table className={shared.dataTable} style={{ minWidth: 500, width: '100%' }}>
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <input
+                                                type="checkbox"
+                                                checked={allChecked}
+                                                onChange={handleCheckAll}
+                                                style={{ width: 22, height: 22, accentColor: '#007bff', cursor: 'pointer' }}
+                                                title="Chọn tất cả mẫu trên trang này"
+                                            />
+                                        </th>
+                                        <th>Tên mẫu</th>
+                                        <th>Tiêu đề</th>
+                                        <th>Số lần đã gửi</th>
+                                        <th></th> {/* Cột cho nút xem trước */}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {sortedTemplates.length > 0 ? (
+                                        sortedTemplates.map(template => {
+                                            const checked = selectedTemplateIds.includes(template._id);
+                                            return (
+                                                <tr
+                                                    key={template._id}
+                                                    style={{
+                                                        background: checked ? 'rgba(0,123,255,0.08)' : undefined,
+                                                        transition: 'background 0.2s'
+                                                    }}
+                                                >
+                                                    <td>
+                                                        <input
+                                                            type="checkbox"
+                                                            id={template._id}
+                                                            value={template._id}
+                                                            onChange={() => handleCheckboxChange(template._id)}
+                                                            checked={checked}
+                                                            style={{ width: 22, height: 22, accentColor: '#007bff', cursor: 'pointer' }}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <label htmlFor={template._id} style={{ cursor: 'pointer' }}>{template.name}</label>
+                                                    </td>
+                                                    <td>{template.subject}</td>
+                                                    <td>{template.sentCount ?? 0}</td>
+                                                    <td>
+                                                        <button
+                                                            type="button"
+                                                            className={shared.btnInfo}
+                                                            style={{ padding: 0, background: 'none', border: 'none', boxShadow: 'none', color: '#6f42c1', fontSize: 22, cursor: 'pointer', lineHeight: 1 }}
+                                                            onClick={() => setPreviewHtml(template.htmlBody)}
+                                                            title="Xem trước nội dung HTML"
+                                                        >
+                                                            👁️
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={3} className={shared.textDanger} style={{ textAlign: 'center' }}>
+                                                Không có mẫu email nào phù hợp.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {/* Phân trang */}
+                    {totalPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
+                            <button
+                                type="button"
+                                className={shared.btn}
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            >
+                                Trang trước
+                            </button>
+                            <span style={{ alignSelf: 'center' }}>Trang {currentPage} / {totalPages}</span>
+                            <button
+                                type="button"
+                                className={shared.btn}
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            >
+                                Trang sau
+                            </button>
+                        </div>
+                    )}
+                </div>
+                {/* Nút gửi chiến dịch */}
+                <button
+                    onClick={handleSend}
+                    disabled={isLoading || selectedTemplateIds.length === 0 || minDelay > maxDelay}
+                    className={`${shared.btn} ${shared.btnPrimary}`}
+                >
+                    {isLoading ? 'Đang gửi...' : '🚀 Bắt đầu gửi Chiến dịch'}
+                </button>
+                {isLoading && logViewers.length > 0 && (
+                    <button
+                        onClick={handlePauseResume}
+                        className={isPaused ? `${shared.btn} ${shared.btnSuccess}` : `${shared.btn} ${shared.btnDanger}`}
+                        style={{ marginLeft: 12, minWidth: 120 }}
+                    >
+                        {isPaused ? 'Tiếp tục' : 'Tạm dừng'}
+                    </button>
+                )}
+                {/* Popup xem trước HTML */}
+                {previewHtml !== null && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                        background: 'rgba(0,0,0,0.35)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: 16
+                    }}>
+                        <div style={{
+                            background: '#fff', borderRadius: 14, padding: 24, minWidth: 340, maxWidth: 700, width: '100%',
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.18)', position: 'relative',
+                            animation: 'fadeInScale 0.25s cubic-bezier(.4,2,.6,1)',
+                            maxHeight: '90vh', overflowY: 'auto'
+                        }}>
+                            <button onClick={() => setPreviewHtml(null)}
+                                style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', fontSize: 22, color: '#888', cursor: 'pointer', fontWeight: 700 }}
+                                aria-label="Đóng preview"
+                            >×</button>
+                            <h2 style={{ marginBottom: 18, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#007bff', letterSpacing: 0.5 }}>Xem trước nội dung HTML</h2>
+                            <div style={{ border: '1px solid #eee', borderRadius: 8, padding: 16, background: '#fafbfc', minHeight: 120 }}>
+                                <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
-            {/* Nút gửi chiến dịch */}
-            <button
-                onClick={handleSend}
-                disabled={isLoading || selectedTemplateIds.length === 0 || minDelay > maxDelay}
-                className={`${shared.btn} ${shared.btnPrimary}`}
-            >
-                {isLoading ? 'Đang gửi...' : '🚀 Bắt đầu gửi Chiến dịch'}
-            </button>
-            {/* Log quá trình gửi mail */}
-            <div style={{ marginTop: 32 }}>
-                <h3 style={{ fontSize: 18, marginBottom: 8 }}>Log quá trình gửi mail</h3>
+            {/* Thanh kéo */}
+            <div
+                className="campaign-splitter"
+                style={{
+                    cursor: isVertical ? 'row-resize' : 'col-resize',
+                    background: '#232733',
+                    width: isVertical ? '100%' : 8,
+                    height: isVertical ? 8 : '100%',
+                    zIndex: 10,
+                    transition: 'background 0.2s',
+                }}
+                onMouseDown={onDragStart}
+                onTouchStart={onDragStart}
+            />
+            {/* Panel phải hoặc dưới: Log quá trình gửi mail */}
+            <div style={{
+                flex: 1,
+                minWidth: isVertical ? undefined : 180,
+                minHeight: isVertical ? 180 : undefined,
+                overflow: 'auto',
+                background: '#181c24',
+                padding: isVertical ? '0.5rem 1.2rem 1.2rem 1.2rem' : '2.5rem',
+                boxSizing: 'border-box',
+                borderLeft: isVertical ? undefined : '1px solid #232733',
+                borderTop: isVertical ? '1px solid #232733' : undefined,
+                color: '#fff',
+            }}>
+                <h3 style={{ fontSize: 18, marginBottom: 8, color: '#0ff' }}>Log quá trình gửi mail</h3>
                 {logViewers.length === 0 ? (
-                    <div style={{ color: '#aaa', background: '#222', borderRadius: 8, padding: 16 }}>Chưa có log nào...</div>
+                    <div style={{ color: '#aaa', background: '#232733', borderRadius: 8, padding: 16 }}>Chưa có log nào...</div>
                 ) : (
                     logViewers.map((viewer, idx) => (
-                        <div key={viewer.jobId} style={{ background: '#222', color: '#fff', borderRadius: 8, padding: 16, minHeight: 120, maxHeight: 240, overflowY: 'auto', fontFamily: 'monospace', fontSize: 15, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: 18, position: 'relative' }}>
+                        <div key={viewer.jobId} style={{ background: '#232733', color: '#fff', borderRadius: 8, padding: 16, minHeight: 360, overflowY: 'auto', fontFamily: 'monospace', fontSize: 15, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: 18, position: 'relative' }}>
                             <div style={{ position: 'absolute', top: 8, right: 12 }}>
                                 <button onClick={() => closeLogViewer(viewer.jobId)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 18, cursor: 'pointer' }} title="Đóng log">×</button>
                             </div>
                             <div style={{ fontWeight: 600, marginBottom: 8, color: '#0ff' }}>Chiến dịch #{idx + 1} (jobId: {viewer.jobId.slice(0, 8)}...)</div>
-                            {viewer.logs.length === 0 ? <div style={{ color: '#aaa' }}>Đang chờ log...</div> : viewer.logs.map((line, i) => <div key={i}>{line}</div>)}
+                            {viewer.logs.length === 0 ? (
+                                <div style={{ color: '#aaa' }}>Đang chờ log...</div>
+                            ) : (
+                                viewer.logs.map((line, i) => {
+                                    const lower = (typeof line === 'string' ? line : '').toLowerCase();
+                                    const isError = /lỗi|error|failed|rejected|message failed/.test(lower);
+                                    const isSuccess = !isError && (/đã gửi mail|sent successfully|success/.test(lower));
+                                    return (
+                                        <div
+                                            key={i}
+                                            style={{
+                                                color: isError ? '#ff4d4f' : isSuccess ? '#00e676' : '#fff',
+                                                fontWeight: isError || isSuccess ? 600 : 400,
+                                                whiteSpace: 'pre-wrap',
+                                            }}
+                                        >
+                                            {line}
+                                        </div>
+                                    );
+                                })
+                            )}
                             {viewer.status === 'done' && <div style={{ color: '#28a745', marginTop: 8, fontWeight: 600 }}>Đã hoàn thành</div>}
                             {viewer.failedEmails.length > 0 && (
                                 <div style={{ marginTop: 12, background: '#330', color: '#ffbaba', borderRadius: 6, padding: 8 }}>
@@ -475,30 +654,6 @@ const CampaignSender = () => {
                     ))
                 )}
             </div>
-            {/* Popup xem trước HTML */}
-            {previewHtml !== null && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-                    background: 'rgba(0,0,0,0.35)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    padding: 16
-                }}>
-                    <div style={{
-                        background: '#fff', borderRadius: 14, padding: 24, minWidth: 340, maxWidth: 700, width: '100%',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.18)', position: 'relative',
-                        animation: 'fadeInScale 0.25s cubic-bezier(.4,2,.6,1)',
-                        maxHeight: '90vh', overflowY: 'auto'
-                    }}>
-                        <button onClick={() => setPreviewHtml(null)}
-                            style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', fontSize: 22, color: '#888', cursor: 'pointer', fontWeight: 700 }}
-                            aria-label="Đóng preview"
-                        >×</button>
-                        <h2 style={{ marginBottom: 18, textAlign: 'center', fontSize: 22, fontWeight: 700, color: '#007bff', letterSpacing: 0.5 }}>Xem trước nội dung HTML</h2>
-                        <div style={{ border: '1px solid #eee', borderRadius: 8, padding: 16, background: '#fafbfc', minHeight: 120 }}>
-                            <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

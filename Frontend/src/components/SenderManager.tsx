@@ -40,7 +40,7 @@ const SenderManager = () => {
     const [activeTab, setActiveTab] = useState<'list' | 'add'>('list');
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 10;
+    const pageSize = 1000;
 
     // Thêm state cho popup chỉnh sửa
     const [editingSender, setEditingSender] = useState<ISender | null>(null);

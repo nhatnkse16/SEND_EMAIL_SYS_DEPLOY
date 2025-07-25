@@ -1,4 +1,5 @@
 const Sender = require('../models/senderModel');
+const xlsx = require('xlsx');
 
 const getSenders = async (req, res) => {
     try {
@@ -94,12 +95,16 @@ const addSendersFromExcel = async (req, res) => {
         const existingSenderEmails = new Set((await Sender.find({}, { email: 1 })).map(s => s.email));
 
         for (const row of data) {
-            const email = row['Email']; // Giả định cột Email trong Excel là 'Email'
-            const appPassword = row['AppPassword']; // Giả định cột AppPassword là 'AppPassword'
-            const dailyLimit = row['DailyLimit'] || 100; // Giả định cột DailyLimit là 'DailyLimit', mặc định 100 nếu không có
+            const email = row['email']; // Giả định cột Email trong Excel là 'email' (viết thường)
+            const appPassword = row['appPassword']; // Giả định cột AppPassword là 'appPassword' (viết thường)
+            const dailyLimit = row['dailyLimit']; // Giả định cột DailyLimit là 'dailyLimit' (viết thường)
+            const batchSize = row['batchSize']; // Thêm cột batchSize
+            const host = row['host']; // Thêm cột host
+            const port = row['port']; // Thêm cột port
+            const secure = row['secure']; // Thêm cột secure
 
             if (!email || !appPassword) {
-                errors.push(`Hàng thiếu Email hoặc AppPassword: ${JSON.stringify(row)}`);
+                errors.push(`Hàng thiếu 'email' hoặc 'appPassword': ${JSON.stringify(row)}`);
                 continue;
             }
 
@@ -108,10 +113,20 @@ const addSendersFromExcel = async (req, res) => {
                 continue; // Bỏ qua nếu email đã tồn tại
             }
 
+            // Chuyển đổi và xử lý giá trị
+            const parsedDailyLimit = typeof dailyLimit === 'number' ? dailyLimit : (parseInt(dailyLimit) || 100);
+            const parsedBatchSize = typeof batchSize === 'number' ? batchSize : (parseInt(batchSize) || 10);
+            const parsedPort = typeof port === 'number' ? port : (parseInt(port) || 465); // Mặc định 465 nếu không có
+            const parsedSecure = typeof secure === 'boolean' ? secure : (String(secure).toLowerCase() === 'true' || String(secure) === '1'); // Xử lý boolean từ string/number
+
             newSenders.push({
                 email: String(email).trim(),
                 appPassword: String(appPassword).trim(),
-                dailyLimit: Number(dailyLimit) // Đảm bảo dailyLimit là số
+                dailyLimit: parsedDailyLimit,
+                batchSize: parsedBatchSize,
+                host: String(host || 'smtp.yandex.com').trim(), // Mặc định 'smtp.yandex.com' nếu không có
+                port: parsedPort,
+                secure: parsedSecure,
             });
             existingSenderEmails.add(email); // Thêm vào set để tránh trùng lặp trong cùng file
         }
