@@ -40,6 +40,7 @@ const SenderManager = () => {
     const [activeTab, setActiveTab] = useState<'list' | 'add'>('list');
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [inactiveCurrentPage, setInactiveCurrentPage] = useState(1);
     const pageSize = 10;
 
     // Thêm state cho popup chỉnh sửa
@@ -223,6 +224,10 @@ const SenderManager = () => {
     const activeSenders = filteredSenders.filter(s => s.isActive);
     const inactiveSenders = filteredSenders.filter(s => !s.isActive);
 
+    // Tính phân trang riêng cho từng loại
+    const activeTotalPages = Math.ceil(activeSenders.length / pageSize);
+    const inactiveTotalPages = Math.ceil(inactiveSenders.length / pageSize);
+
     // Thêm icon SVG cho nút xoá
     const TrashIcon = () => (
         <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle' }}>
@@ -308,23 +313,24 @@ const SenderManager = () => {
                                 {showPassword ? '🙈' : '👁️'}
                             </button>
                         </div>
-                        <input
-                            type="text"
-                            placeholder="SMTP Host (ví dụ: smtp.yandex.com)"
+                        <select
                             value={host}
                             onChange={e => setHost(e.target.value)}
                             className={shared.formControl}
                             style={{ background: '#222', color: '#fff', border: '1px solid #555', marginTop: '0.5rem' }}
-                        />
-                        <input
-                            type="number"
-                            placeholder="SMTP Port (ví dụ: 465)"
+                        >
+                            <option value="smtp.yandex.com">smtp.yandex.com</option>
+                            <option value="smtp.zoho.com">smtp.zoho.com</option>
+                        </select>
+                        <select
                             value={port}
                             onChange={e => setPort(Number(e.target.value))}
                             className={shared.formControl}
                             style={{ background: '#222', color: '#fff', border: '1px solid #555', marginTop: '0.5rem' }}
-                            min="1"
-                        />
+                        >
+                            <option value={465}>465</option>
+                            <option value={587}>587</option>
+                        </select>
                         <label style={{ color: '#fff', marginTop: 8 }}>
                             <input
                                 type="checkbox"
@@ -527,6 +533,29 @@ const SenderManager = () => {
                             </table>
                         </div>
                     </div>
+
+                    {/* Phân trang cho tài khoản hoạt động */}
+                    {activeTotalPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
+                            <button
+                                type="button"
+                                className={shared.btn}
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            >
+                                Trang trước
+                            </button>
+                            <span style={{ alignSelf: 'center' }}>Trang {currentPage} / {activeTotalPages}</span>
+                            <button
+                                type="button"
+                                className={shared.btn}
+                                disabled={currentPage === activeTotalPages}
+                                onClick={() => setCurrentPage(p => Math.min(activeTotalPages, p + 1))}
+                            >
+                                Trang sau
+                            </button>
+                        </div>
+                    )}
                     {/* Bảng tài khoản TẠM NGƯNG */}
                     <h3 style={{ color: '#dc3545', margin: '18px 0 8px 0' }}>Tài khoản TẠM NGƯNG</h3>
                     <div className={shared.tableResponsive} style={{ width: '100%', overflowX: 'auto' }}>
@@ -550,9 +579,9 @@ const SenderManager = () => {
                                     ) : inactiveSenders.length === 0 ? (
                                         <tr><td colSpan={8} className={shared.textCenter}>Không có tài khoản tạm ngưng.</td></tr>
                                     ) : (
-                                        inactiveSenders.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((sender, idx) => (
+                                        inactiveSenders.slice((inactiveCurrentPage - 1) * pageSize, inactiveCurrentPage * pageSize).map((sender, idx) => (
                                             <tr key={sender._id}>
-                                                <td>{(currentPage - 1) * pageSize + idx + 1}</td>
+                                                <td>{(inactiveCurrentPage - 1) * pageSize + idx + 1}</td>
                                                 <td>{sender.email}</td>
                                                 <td>{sender.host}</td>
                                                 <td>{sender.port}</td>
@@ -645,23 +674,23 @@ const SenderManager = () => {
                             </table>
                         </div>
                     </div>
-                    {/* Phân trang */}
-                    {totalPages > 1 && (
+                    {/* Phân trang cho tài khoản tạm ngưng */}
+                    {inactiveTotalPages > 1 && (
                         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 12 }}>
                             <button
                                 type="button"
                                 className={shared.btn}
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={inactiveCurrentPage === 1}
+                                onClick={() => setInactiveCurrentPage(p => Math.max(1, p - 1))}
                             >
                                 Trang trước
                             </button>
-                            <span style={{ alignSelf: 'center' }}>Trang {currentPage} / {totalPages}</span>
+                            <span style={{ alignSelf: 'center' }}>Trang {inactiveCurrentPage} / {inactiveTotalPages}</span>
                             <button
                                 type="button"
                                 className={shared.btn}
-                                disabled={currentPage === totalPages}
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={inactiveCurrentPage === inactiveTotalPages}
+                                onClick={() => setInactiveCurrentPage(p => Math.min(inactiveTotalPages, p + 1))}
                             >
                                 Trang sau
                             </button>

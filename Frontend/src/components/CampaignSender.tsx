@@ -54,7 +54,7 @@ const CampaignSender = () => {
     // Thêm state cho search, filter, phân trang
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 5;
+    const pageSize = 10;
 
     // State cho các ô cấu hình
     const [brandName, setBrandName] = useState<string>('Your Brand');
