@@ -40,7 +40,7 @@ const SenderManager = () => {
     const [activeTab, setActiveTab] = useState<'list' | 'add'>('list');
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 1000;
+    const pageSize = 10;
 
     // Thêm state cho popup chỉnh sửa
     const [editingSender, setEditingSender] = useState<ISender | null>(null);
@@ -179,6 +179,34 @@ const SenderManager = () => {
             alert(`Lỗi: ${error.response?.data?.message || 'Không thể tải lên file.'}`);
         } finally {
             setIsUploading(false);
+        }
+    };
+
+    // Hàm kích hoạt tất cả tài khoản đang tạm ngưng
+    const handleActivateAllSenders = async () => {
+        if (window.confirm('Bạn có chắc chắn muốn kích hoạt TẤT CẢ tài khoản đang tạm ngưng?')) {
+            try {
+                const res = await axios.post('http://localhost:5000/api/senders/activate-all');
+                alert(res.data.message);
+                fetchSenders();
+            } catch (error) {
+                console.error('Lỗi khi kích hoạt tài khoản gửi:', error);
+                alert('Không thể kích hoạt tài khoản gửi.');
+            }
+        }
+    };
+
+    // Hàm tạm ngưng tất cả tài khoản đang hoạt động
+    const handleDeactivateAllSenders = async () => {
+        if (window.confirm('Bạn có chắc chắn muốn tạm ngưng TẤT CẢ tài khoản đang hoạt động?')) {
+            try {
+                const res = await axios.post('http://localhost:5000/api/senders/deactivate-all');
+                alert(res.data.message);
+                fetchSenders();
+            } catch (error) {
+                console.error('Lỗi khi tạm ngưng tài khoản gửi:', error);
+                alert('Không thể tạm ngưng tài khoản gửi.');
+            }
         }
     };
 
@@ -370,9 +398,15 @@ const SenderManager = () => {
                         />
                     </div>
                     {/* Nút reset sent counts */}
-                    <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+                    <div style={{ marginBottom: '1.5rem', textAlign: 'center', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <button onClick={handleResetSentCounts} className={`${shared.btn} ${shared.btnInfo}`}>
                             Đặt lại số lượng đã gửi của tất cả tài khoản
+                        </button>
+                        <button onClick={handleActivateAllSenders} className={`${shared.btn} ${shared.btnSuccess}`}>
+                            Kích hoạt tất cả tài khoản tạm ngưng
+                        </button>
+                        <button onClick={handleDeactivateAllSenders} className={`${shared.btn} ${shared.btnWarning}`}>
+                            Tạm ngưng tất cả tài khoản hoạt động
                         </button>
                     </div>
                     {/* Bảng tài khoản ĐANG HOẠT ĐỘNG */}

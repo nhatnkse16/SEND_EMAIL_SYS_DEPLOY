@@ -169,4 +169,39 @@ const addSendersFromExcel = async (req, res) => {
     }
 };
 
-module.exports = { getSenders, addSenders, updateSender, deleteSender, resetSentCounts, addSendersFromExcel };
+// Kích hoạt tất cả tài khoản đang tạm ngưng
+const activateAllSenders = async (req, res) => {
+    try {
+        const result = await Sender.updateMany(
+            { isActive: false },
+            { $set: { isActive: true } }
+        );
+        res.status(200).json({
+            message: `Đã kích hoạt ${result.modifiedCount} tài khoản gửi.`,
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi kích hoạt tài khoản gửi.', error: error.message });
+    }
+};
+
+// Tạm ngưng tất cả tài khoản đang hoạt động
+const deactivateAllSenders = async (req, res) => {
+    try {
+        const result = await Sender.updateMany(
+            { isActive: true },
+            { $set: { isActive: false } }
+        );
+        res.status(200).json({
+            message: `Đã tạm ngưng ${result.modifiedCount} tài khoản gửi.`,
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi tạm ngưng tài khoản gửi.', error: error.message });
+    }
+};
+
+module.exports = {
+    getSenders, addSenders, updateSender, deleteSender, resetSentCounts, addSendersFromExcel,
+    activateAllSenders, deactivateAllSenders
+};

@@ -256,6 +256,11 @@ const sendCampaign = async (req, res) => {
                             logs.push(`[${sender.email}] Đã đạt giới hạn gửi trong ngày.`);
                             sendSseLog(jobId, `[${sender.email}] Đã đạt giới hạn gửi trong ngày.`);
                         }
+                        // Delay giữa các lần gửi (cả khi lỗi)
+                        const delay = getRandomDelay(finalMinDelay, finalMaxDelay) * 1000;
+                        logs.push(`[${sender.email}] Chờ ${delay / 1000}s trước khi gửi tiếp...`);
+                        sendSseLog(jobId, `[${sender.email}] Chờ ${delay / 1000}s trước khi gửi tiếp...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
                     }
                     recipientIndex++;
                 }

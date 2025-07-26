@@ -106,7 +106,25 @@ const CampaignSender = () => {
         if (savedMinDelay !== null) setMinDelay(parseInt(savedMinDelay, 10));
         if (savedMaxDelay !== null) setMaxDelay(parseInt(savedMaxDelay, 10));
         if (savedConcurrency !== null) setConcurrencyLimit(parseInt(savedConcurrency, 10));
+
+        // Khôi phục log từ localStorage
+        const savedLogs = localStorage.getItem('campaign_logs');
+        if (savedLogs) {
+            try {
+                const parsedLogs = JSON.parse(savedLogs);
+                setLogViewers(parsedLogs);
+            } catch (error) {
+                console.error('Lỗi khi khôi phục log từ localStorage:', error);
+            }
+        }
     }, []);
+
+    // Lưu log vào localStorage mỗi khi logViewers thay đổi
+    useEffect(() => {
+        if (logViewers.length > 0) {
+            localStorage.setItem('campaign_logs', JSON.stringify(logViewers));
+        }
+    }, [logViewers]);
 
     // Xử lý khi checkbox của một mẫu email được thay đổi
     const handleCheckboxChange = (templateId: string) => {
@@ -293,6 +311,15 @@ const CampaignSender = () => {
     // Hàm đóng log viewer
     const closeLogViewer = (jobId: string) => {
         setLogViewers(viewers => viewers.filter(v => v.jobId !== jobId));
+    };
+
+    // Hàm xóa tất cả log
+    const clearAllLogs = () => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa tất cả log chiến dịch? Hành động này không thể hoàn tác!')) {
+            setLogViewers([]);
+            localStorage.removeItem('campaign_logs');
+            alert('Đã xóa tất cả log chiến dịch!');
+        }
     };
 
     // State cho chia layout kéo
@@ -613,46 +640,53 @@ const CampaignSender = () => {
                 color: '#fff',
             }}>
                 <h3 style={{ fontSize: 18, marginBottom: 8, color: '#0ff' }}>Log quá trình gửi mail</h3>
+                <div style={{ fontSize: 12, color: '#888', marginBottom: 12, fontStyle: 'italic' }}>
+                    💾 Log được lưu tự động và sẽ được khôi phục khi tải lại trang
+                </div>
                 {logViewers.length === 0 ? (
                     <div style={{ color: '#aaa', background: '#232733', borderRadius: 8, padding: 16 }}>Chưa có log nào...</div>
                 ) : (
-                    logViewers.map((viewer, idx) => (
-                        <div key={viewer.jobId} style={{ background: '#232733', color: '#fff', borderRadius: 8, padding: 16, minHeight: 360, overflowY: 'auto', fontFamily: 'monospace', fontSize: 15, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: 18, position: 'relative' }}>
-                            <div style={{ position: 'absolute', top: 8, right: 12 }}>
-                                <button onClick={() => closeLogViewer(viewer.jobId)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 18, cursor: 'pointer' }} title="Đóng log">×</button>
-                            </div>
-                            <div style={{ fontWeight: 600, marginBottom: 8, color: '#0ff' }}>Chiến dịch #{idx + 1} (jobId: {viewer.jobId.slice(0, 8)}...)</div>
-                            {viewer.logs.length === 0 ? (
-                                <div style={{ color: '#aaa' }}>Đang chờ log...</div>
-                            ) : (
-                                viewer.logs.map((line, i) => {
-                                    const lower = (typeof line === 'string' ? line : '').toLowerCase();
-                                    const isError = /lỗi|error|failed|rejected|message failed/.test(lower);
-                                    const isSuccess = !isError && (/đã gửi mail|sent successfully|success/.test(lower));
-                                    return (
-                                        <div
-                                            key={i}
-                                            style={{
-                                                color: isError ? '#ff4d4f' : isSuccess ? '#00e676' : '#fff',
-                                                fontWeight: isError || isSuccess ? 600 : 400,
-                                                whiteSpace: 'pre-wrap',
-                                            }}
-                                        >
-                                            {line}
-                                        </div>
-                                    );
-                                })
-                            )}
-                            {viewer.status === 'done' && <div style={{ color: '#28a745', marginTop: 8, fontWeight: 600 }}>Đã hoàn thành</div>}
-                            {viewer.failedEmails.length > 0 && (
-                                <div style={{ marginTop: 12, background: '#330', color: '#ffbaba', borderRadius: 6, padding: 8 }}>
-                                    <div style={{ fontWeight: 600, color: '#ffbaba', marginBottom: 4 }}>Danh sách email gửi lỗi:</div>
-                                    {viewer.failedEmails.map((email, i) => <div key={i} style={{ fontFamily: 'monospace', color: '#ffbaba' }}>{email}</div>)}
-                                </div>
-                            )}
-                        </div>
-                    ))
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+                        <button onClick={clearAllLogs} className={shared.btnDanger} style={{ minWidth: 150 }}>Xóa tất cả log</button>
+                        <button onClick={() => setLogViewers([])} className={shared.btnDanger} style={{ minWidth: 150 }}>Xóa log hiện tại</button>
+                    </div>
                 )}
+                {logViewers.map((viewer, idx) => (
+                    <div key={viewer.jobId} style={{ background: '#232733', color: '#fff', borderRadius: 8, padding: 16, minHeight: 360, overflowY: 'auto', fontFamily: 'monospace', fontSize: 15, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: 18, position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: 8, right: 12 }}>
+                            <button onClick={() => closeLogViewer(viewer.jobId)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 18, cursor: 'pointer' }} title="Đóng log">×</button>
+                        </div>
+                        <div style={{ fontWeight: 600, marginBottom: 8, color: '#0ff' }}>Chiến dịch #{idx + 1} (jobId: {viewer.jobId.slice(0, 8)}...)</div>
+                        {viewer.logs.length === 0 ? (
+                            <div style={{ color: '#aaa' }}>Đang chờ log...</div>
+                        ) : (
+                            viewer.logs.map((line, i) => {
+                                const lower = (typeof line === 'string' ? line : '').toLowerCase();
+                                const isError = /lỗi|error|failed|rejected|message failed/.test(lower);
+                                const isSuccess = !isError && (/đã gửi mail|sent successfully|success/.test(lower));
+                                return (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            color: isError ? '#ff4d4f' : isSuccess ? '#00e676' : '#fff',
+                                            fontWeight: isError || isSuccess ? 600 : 400,
+                                            whiteSpace: 'pre-wrap',
+                                        }}
+                                    >
+                                        {line}
+                                    </div>
+                                );
+                            })
+                        )}
+                        {viewer.status === 'done' && <div style={{ color: '#28a745', marginTop: 8, fontWeight: 600 }}>Đã hoàn thành</div>}
+                        {viewer.failedEmails.length > 0 && (
+                            <div style={{ marginTop: 12, background: '#330', color: '#ffbaba', borderRadius: 6, padding: 8 }}>
+                                <div style={{ fontWeight: 600, color: '#ffbaba', marginBottom: 4 }}>Danh sách email gửi lỗi:</div>
+                                {viewer.failedEmails.map((email, i) => <div key={i} style={{ fontFamily: 'monospace', color: '#ffbaba' }}>{email}</div>)}
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
         </div>
     );
