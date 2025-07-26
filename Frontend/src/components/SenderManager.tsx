@@ -120,7 +120,7 @@ const SenderManager = () => {
     const toggleActive = async (sender: ISender) => {
         try {
             const res = await axios.put(`http://localhost:5000/api/senders/${sender._id}`, { isActive: !sender.isActive });
-            alert(`Trạng thái của ${res.data.email} đã được cập nhật thành ${res.data.isActive ? 'Hoạt động' : 'Tạm ngưng'}.`);
+            // alert(`Trạng thái của ${res.data.email} đã được cập nhật thành ${res.data.isActive ? 'Hoạt động' : 'Tạm ngưng'}.`);
             fetchSenders();
         } catch (error) {
             console.error('Lỗi khi cập nhật trạng thái:', error);

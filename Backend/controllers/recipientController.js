@@ -9,7 +9,7 @@ const getRecipients = async (req, res) => {
         const skip = (parseInt(page) - 1) * parseInt(pageSize);
         const total = await Recipient.countDocuments(filter);
         const recipients = await Recipient.find(filter)
-            .sort({ createdAt: -1 })
+            .sort({ createdAt: 1 })
             .skip(skip)
             .limit(parseInt(pageSize));
         res.status(200).json({ recipients, total });
@@ -153,7 +153,55 @@ const addRecipientsFromCsv = async (req, res) => {
     }
 };
 
+// Đặt lại trạng thái cho từng recipient
+const resetStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const recipient = await Recipient.findById(id);
+        if (!recipient) {
+            return res.status(404).json({ message: 'Không tìm thấy người nhận.' });
+        }
+        recipient.status = 'pending';
+        await recipient.save();
+        res.json({ message: 'Đã đặt lại trạng thái về pending!', recipient });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi đặt lại trạng thái.', error: error.message });
+    }
+};
+
+// Đặt lại trạng thái tất cả email đã gửi về pending
+const resetSentStatus = async (req, res) => {
+    try {
+        const result = await Recipient.updateMany(
+            { status: 'sent' },
+            { $set: { status: 'pending' } }
+        );
+        res.status(200).json({
+            message: `Đã đặt lại ${result.modifiedCount} email đã gửi về trạng thái pending.`,
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi đặt lại trạng thái email đã gửi.', error: error.message });
+    }
+};
+
+// Đặt lại trạng thái tất cả email lỗi về pending
+const resetFailedStatus = async (req, res) => {
+    try {
+        const result = await Recipient.updateMany(
+            { status: 'failed' },
+            { $set: { status: 'pending' } }
+        );
+        res.status(200).json({
+            message: `Đã đặt lại ${result.modifiedCount} email lỗi về trạng thái pending.`,
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi khi đặt lại trạng thái email lỗi.', error: error.message });
+    }
+};
+
 module.exports = {
     getRecipients, addRecipient, addRecipientsFromJson,
-    updateRecipient, deleteRecipient, clearRecipients, resetRecipientsStatus, addRecipientsFromCsv
+    updateRecipient, deleteRecipient, clearRecipients, resetRecipientsStatus, addRecipientsFromCsv, resetStatus, resetSentStatus, resetFailedStatus
 };

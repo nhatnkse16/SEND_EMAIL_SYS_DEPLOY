@@ -14,12 +14,10 @@ const senderSchema = new mongoose.Schema({
     host: {
         type: String,
         required: true,
-        default: 'smtp.yandex.com',
     },
     port: {
         type: Number,
         required: true,
-        default: 465,
     },
     secure: {
         type: Boolean,

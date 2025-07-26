@@ -34,10 +34,18 @@ const sendChunk = async (sender, recipientsChunk, selectedTemplates, brandName, 
             const randomTemplate = selectedTemplates[Math.floor(Math.random() * selectedTemplates.length)];
 
             // Cấu hình transporter cho nodemailer
+            // Tự động điều chỉnh secure dựa trên port
+            let secure = sender.secure;
+            if (sender.port === 587) {
+                secure = false; // Port 587 sử dụng STARTTLS, không phải SSL
+            } else if (sender.port === 465) {
+                secure = true; // Port 465 sử dụng SSL
+            }
+
             const transporter = nodemailer.createTransport({
                 host: sender.host,
                 port: sender.port,
-                secure: sender.secure,
+                secure: secure,
                 auth: {
                     user: sender.email,         // Email tài khoản gửi
                     pass: sender.appPassword    // Mật khẩu ứng dụng (không phải mật khẩu email thông thường)
@@ -103,21 +111,21 @@ const sendCampaign = async (req, res) => {
         }
 
         const senders = await Sender.find({ isActive: true });
-        let recipients = await Recipient.find({ status: { $in: ['pending', 'failed'] } });
+        let recipients = await Recipient.find({ status: 'pending' });
         const selectedTemplates = await Template.find({ _id: { $in: selectedTemplateIds } });
 
         if (senders.length === 0) {
             return res.status(400).json({ message: 'Không tìm thấy tài khoản gửi nào đang hoạt động.' });
         }
         if (recipients.length === 0) {
-            return res.status(400).json({ message: 'Không tìm thấy người nhận nào có trạng thái "pending".' });
+            return res.status(400).json({ message: 'Không tìm thấy người nhận nào có trạng thái "pending". Vui lòng thêm người nhận hoặc đặt lại trạng thái một số người nhận về "pending".' });
         }
         if (selectedTemplates.length === 0) {
             return res.status(400).json({ message: 'Không tìm thấy mẫu email nào được chọn.' });
         }
 
         console.log(`Tìm thấy ${senders.length} tài khoản gửi đang hoạt động.`.blue);
-        console.log(`Tìm thấy ${recipients.length} người nhận.`.blue);
+        console.log(`Tìm thấy ${recipients.length} người nhận có trạng thái "pending".`.blue);
         console.log(`Tìm thấy ${selectedTemplates.length} mẫu email được chọn.`.blue);
 
         const finalBrandName = brandName || 'Your Brand';
@@ -174,10 +182,18 @@ const sendCampaign = async (req, res) => {
                         logs.push(`[${sender.email}] Đang gửi mail cho ${recipient.email}`);
                         sendSseLog(jobId, `[${sender.email}] Đang gửi mail cho ${recipient.email}`);
                         const randomTemplate = selectedTemplates[Math.floor(Math.random() * selectedTemplates.length)];
+                        // Tự động điều chỉnh secure dựa trên port
+                        let secure = sender.secure;
+                        if (sender.port === 587) {
+                            secure = false; // Port 587 sử dụng STARTTLS, không phải SSL
+                        } else if (sender.port === 465) {
+                            secure = true; // Port 465 sử dụng SSL
+                        }
+
                         const transporter = nodemailer.createTransport({
                             host: sender.host,
                             port: sender.port,
-                            secure: sender.secure,
+                            secure: secure,
                             auth: {
                                 user: sender.email,
                                 pass: sender.appPassword

@@ -257,6 +257,56 @@ const RecipientManager = () => {
 
     const tabData = getTabData();
 
+    // Hàm đặt lại trạng thái cho từng người nhận
+    const handleResetStatusOne = async (id: string) => {
+        if (window.confirm('Bạn có chắc chắn muốn đặt lại trạng thái người nhận này về "pending"?')) {
+            try {
+                await axios.patch(`http://localhost:5000/api/recipients/${id}/reset-status`);
+                alert('Đã đặt lại trạng thái thành pending!');
+                fetchTotalCounts();
+                if (activeTab === 'pending') fetchRecipients('pending', pendingPage, pageSize, search).then(setPendingData);
+                if (activeTab === 'sent') fetchRecipients('sent', sentPage, pageSize, search).then(setSentData);
+                if (activeTab === 'failed') fetchRecipients('failed', failedPage, pageSize, search).then(setFailedData);
+            } catch (error) {
+                alert('Không thể đặt lại trạng thái.');
+            }
+        }
+    };
+
+    // Hàm đặt lại trạng thái tất cả email đã gửi về pending
+    const handleResetSentStatus = async () => {
+        if (window.confirm('Bạn có chắc chắn muốn đặt lại trạng thái TẤT CẢ email đã gửi về "pending"?')) {
+            try {
+                const res = await axios.post('http://localhost:5000/api/recipients/reset-sent-status');
+                alert(res.data.message);
+                fetchTotalCounts();
+                if (activeTab === 'pending') fetchRecipients('pending', pendingPage, pageSize, search).then(setPendingData);
+                if (activeTab === 'sent') fetchRecipients('sent', sentPage, pageSize, search).then(setSentData);
+                if (activeTab === 'failed') fetchRecipients('failed', failedPage, pageSize, search).then(setFailedData);
+            } catch (error) {
+                console.error('Lỗi khi đặt lại trạng thái email đã gửi:', error);
+                alert('Không thể đặt lại trạng thái email đã gửi.');
+            }
+        }
+    };
+
+    // Hàm đặt lại trạng thái tất cả email lỗi về pending
+    const handleResetFailedStatus = async () => {
+        if (window.confirm('Bạn có chắc chắn muốn đặt lại trạng thái TẤT CẢ email lỗi về "pending"?')) {
+            try {
+                const res = await axios.post('http://localhost:5000/api/recipients/reset-failed-status');
+                alert(res.data.message);
+                fetchTotalCounts();
+                if (activeTab === 'pending') fetchRecipients('pending', pendingPage, pageSize, search).then(setPendingData);
+                if (activeTab === 'sent') fetchRecipients('sent', sentPage, pageSize, search).then(setSentData);
+                if (activeTab === 'failed') fetchRecipients('failed', failedPage, pageSize, search).then(setFailedData);
+            } catch (error) {
+                console.error('Lỗi khi đặt lại trạng thái email lỗi:', error);
+                alert('Không thể đặt lại trạng thái email lỗi.');
+            }
+        }
+    };
+
     return (
         <div style={{ width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
             {/* Tabs trạng thái */}
@@ -348,7 +398,8 @@ const RecipientManager = () => {
                                                         border: 'none',
                                                         boxShadow: '0 1px 4px rgba(220,53,69,0.07)',
                                                         transition: 'background 0.2s, color 0.2s',
-                                                        cursor: 'pointer'
+                                                        cursor: 'pointer',
+                                                        marginRight: 8
                                                     }}
                                                     onMouseOver={e => { e.currentTarget.style.background = '#f1b0b7'; e.currentTarget.style.color = '#fff'; }}
                                                     onMouseOut={e => { e.currentTarget.style.background = '#f8d7da'; e.currentTarget.style.color = '#c82333'; }}
@@ -356,6 +407,30 @@ const RecipientManager = () => {
                                                 >
                                                     <TrashIcon />
                                                     <span style={{ fontWeight: 500 }}>Xoá</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleResetStatusOne(recipient._id)}
+                                                    className={shared.btnInfo}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        fontSize: 15,
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: 6,
+                                                        borderRadius: 6,
+                                                        background: '#d1ecf1',
+                                                        color: '#0c5460',
+                                                        border: 'none',
+                                                        boxShadow: '0 1px 4px rgba(23,162,184,0.07)',
+                                                        transition: 'background 0.2s, color 0.2s',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    onMouseOver={e => { e.currentTarget.style.background = '#bee5eb'; e.currentTarget.style.color = '#007bff'; }}
+                                                    onMouseOut={e => { e.currentTarget.style.background = '#d1ecf1'; e.currentTarget.style.color = '#0c5460'; }}
+                                                    title="Đặt lại trạng thái về pending"
+                                                >
+                                                    &#8635;
+                                                    <span style={{ fontWeight: 500 }}>Đặt lại</span>
                                                 </button>
                                             </td>
                                         </tr>
@@ -389,8 +464,10 @@ const RecipientManager = () => {
                 )}
             </div>
             {/* Các nút hành động chung */}
-            <div style={{ margin: '1.5rem 0', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <div style={{ margin: '1.5rem 0', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button onClick={handleResetStatus} className={`${shared.btn} ${shared.btnInfo}`}>Đặt lại trạng thái tất cả</button>
+                <button onClick={handleResetSentStatus} className={`${shared.btn} ${shared.btnSuccess}`}>Đặt lại tất cả đã gửi</button>
+                <button onClick={handleResetFailedStatus} className={`${shared.btn} ${shared.btnWarning}`}>Đặt lại tất cả lỗi</button>
                 <button onClick={handleClearAll} className={`${shared.btn} ${shared.btnDanger}`}>Xóa tất cả người nhận</button>
             </div>
             {/* Thêm/Import người nhận */}
