@@ -39,7 +39,7 @@ npm install
 ```bash
 npm start
 ```
-- Server chạy tại: `http://localhost:5000`
+- Server chạy tại: `https://send-email-sys-deploy.onrender.com`
 
 ---
 

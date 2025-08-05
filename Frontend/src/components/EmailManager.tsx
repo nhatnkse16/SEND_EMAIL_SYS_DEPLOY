@@ -76,7 +76,7 @@ const EmailManager: React.FC<EmailManagerProps> = ({ senderId: initialSenderId, 
   // Fetch senders
   const fetchSenders = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/senders');
+      const response = await axios.get('https://send-email-sys-deploy.onrender.com/api/senders');
       // Đảm bảo luôn là mảng
       setSenders(Array.isArray(response.data) ? response.data : (response.data.data || []));
       if ((Array.isArray(response.data) ? response.data : (response.data.data || [])).length > 0 && !selectedSenderId) {
@@ -104,7 +104,7 @@ const EmailManager: React.FC<EmailManagerProps> = ({ senderId: initialSenderId, 
         ...(showUnreadOnly && { isRead: 'false' })
       });
 
-      const response = await axios.get(`http://localhost:5000/api/emails/${selectedSenderId}?${params}`);
+      const response = await axios.get(`https://send-email-sys-deploy.onrender.com/api/emails/${selectedSenderId}?${params}`);
       console.log('Email response:', response.data);
       const emailsData = response.data.data || [];
       console.log('Emails data:', emailsData);
@@ -121,7 +121,7 @@ const EmailManager: React.FC<EmailManagerProps> = ({ senderId: initialSenderId, 
     if (!selectedSenderId) return;
     
     try {
-      const response = await axios.get(`http://localhost:5000/api/emails/${selectedSenderId}/stats`);
+      const response = await axios.get(`https://send-email-sys-deploy.onrender.com/api/emails/${selectedSenderId}/stats`);
       setStats(response.data.data || {});
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -134,7 +134,7 @@ const EmailManager: React.FC<EmailManagerProps> = ({ senderId: initialSenderId, 
     
     setLoading(true);
     try {
-      await axios.post(`http://localhost:5000/api/emails/${selectedSenderId}/fetch`, {
+      await axios.post(`https://send-email-sys-deploy.onrender.com/api/emails/${selectedSenderId}/fetch`, {
         folder: currentFolder,
         limit: 50
       });
@@ -149,7 +149,7 @@ const EmailManager: React.FC<EmailManagerProps> = ({ senderId: initialSenderId, 
   // Mark email as read/unread
   const toggleRead = async (emailId: string, isRead: boolean) => {
     try {
-      await axios.put(`http://localhost:5000/api/emails/${emailId}/read`, { isRead });
+      await axios.put(`https://send-email-sys-deploy.onrender.com/api/emails/${emailId}/read`, { isRead });
       setEmails(emails.map(email => 
         email._id === emailId ? { ...email, isRead } : email
       ));
@@ -161,7 +161,7 @@ const EmailManager: React.FC<EmailManagerProps> = ({ senderId: initialSenderId, 
   // Move email to folder
   const moveToFolder = async (emailId: string, folder: string) => {
     try {
-      await axios.put(`http://localhost:5000/api/emails/${emailId}/move`, { folder });
+      await axios.put(`https://send-email-sys-deploy.onrender.com/api/emails/${emailId}/move`, { folder });
       await fetchEmails();
     } catch (error) {
       console.error('Error moving email:', error);
@@ -171,7 +171,7 @@ const EmailManager: React.FC<EmailManagerProps> = ({ senderId: initialSenderId, 
   // Delete email
   const deleteEmail = async (emailId: string) => {
     try {
-      await axios.delete(`http://localhost:5000/api/emails/${emailId}`);
+      await axios.delete(`https://send-email-sys-deploy.onrender.com/api/emails/${emailId}`);
       await fetchEmails();
     } catch (error) {
       console.error('Error deleting email:', error);
@@ -183,7 +183,7 @@ const EmailManager: React.FC<EmailManagerProps> = ({ senderId: initialSenderId, 
     if (selectedEmails.length === 0 || !selectedSenderId) return;
 
     try {
-      await axios.post(`http://localhost:5000/api/emails/${selectedSenderId}/bulk`, {
+      await axios.post(`https://send-email-sys-deploy.onrender.com/api/emails/${selectedSenderId}/bulk`, {
         operation,
         emailIds: selectedEmails,
         ...(folder && { folder })
@@ -252,7 +252,7 @@ const EmailManager: React.FC<EmailManagerProps> = ({ senderId: initialSenderId, 
         throw new Error('Sender account not found');
       }
 
-      const response = await axios.post(`http://localhost:5000/api/emails/send`, {
+      const response = await axios.post(`https://send-email-sys-deploy.onrender.com/api/emails/send`, {
         senderId: senderAccount._id,
         to: replyData.to,
         subject: replyData.subject,

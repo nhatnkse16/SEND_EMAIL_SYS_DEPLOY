@@ -67,7 +67,7 @@ const TemplateManager = () => {
     // <<< PHẦN LOGIC FETCH ĐÃ ĐƯỢC THÊM VÀO >>>
     const fetchTemplates = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/templates');
+            const res = await axios.get('https://send-email-sys-deploy.onrender.com/api/templates');
             setTemplates(res.data);
         } catch (error) {
             console.error("Lỗi khi tải mẫu email:", error);
@@ -85,7 +85,7 @@ const TemplateManager = () => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await axios.post('http://localhost:5000/api/templates', { name, subject, htmlBody });
+            await axios.post('https://send-email-sys-deploy.onrender.com/api/templates', { name, subject, htmlBody });
             setToast({ message: 'Thêm mẫu thành công!', type: 'success' });
             // Xóa trống các ô input
             setName('');
@@ -103,7 +103,7 @@ const TemplateManager = () => {
     const handleDelete = async (id: string) => {
         if (window.confirm('Bạn có chắc muốn xóa mẫu này?')) {
             try {
-                await axios.delete(`http://localhost:5000/api/templates/${id}`);
+                await axios.delete(`https://send-email-sys-deploy.onrender.com/api/templates/${id}`);
                 fetchTemplates();
             } catch (error: any) {
                 setToast({ message: 'Lỗi: ' + (error.response?.data?.message || error.message), type: 'error' });
@@ -217,7 +217,7 @@ const TemplateManager = () => {
                                 onClick={async () => {
                                     setIsSaving(true);
                                     try {
-                                        await axios.put(`http://localhost:5000/api/templates/${editingTemplate._id}`, {
+                                        await axios.put(`https://send-email-sys-deploy.onrender.com/api/templates/${editingTemplate._id}`, {
                                             name: editingTemplate.name,
                                             subject: editingTemplate.subject,
                                             htmlBody: editingTemplate.htmlBody

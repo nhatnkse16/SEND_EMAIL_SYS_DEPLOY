@@ -3,7 +3,7 @@ async function testAPI() {
         console.log('🧪 Testing Email API...');
         
         const senderId = '68893f6e06fa93059ca7d638';
-        const url = `http://localhost:5000/api/emails/${senderId}?folder=INBOX&page=1&limit=10`;
+        const url = `https://send-email-sys-deploy.onrender.com/api/emails/${senderId}?folder=INBOX&page=1&limit=10`;
         
         console.log('URL:', url);
         

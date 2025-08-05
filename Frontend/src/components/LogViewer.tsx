@@ -19,7 +19,7 @@ const LogViewer = () => {
     const fetchLogs = async () => {
         setIsLoading(true);
         try {
-            const res = await axios.get('http://localhost:5000/api/logs');
+            const res = await axios.get('https://send-email-sys-deploy.onrender.com/api/logs');
             setLogs(res.data);
             setError('');
         } catch (err) {

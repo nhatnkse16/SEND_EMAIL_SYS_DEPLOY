@@ -29,7 +29,7 @@ node test-yandex-connection.js
 
 ### Phương pháp 3: Test trực tiếp qua API
 ```bash
-curl -X POST http://localhost:5000/api/senders/test-connection/[sender-id]
+curl -X POST https://send-email-sys-deploy.onrender.com/api/senders/test-connection/[sender-id]
 ```
 
 ## 📝 Cách tạo App Password cho Yandex

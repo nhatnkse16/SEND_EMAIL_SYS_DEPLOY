@@ -57,7 +57,7 @@ const SenderManager = () => {
     const fetchSenders = async () => {
         try {
             setIsLoading(true);
-            const res = await axios.get('http://localhost:5000/api/senders');
+            const res = await axios.get('https://send-email-sys-deploy.onrender.com/api/senders');
             setSenders(res.data);
         } catch (error) {
             console.error("Lỗi khi tải danh sách tài khoản gửi:", error);
@@ -81,7 +81,7 @@ const SenderManager = () => {
 
         setIsSubmitting(true);
         try {
-            const res = await axios.post('http://localhost:5000/api/senders/add', [{
+            const res = await axios.post('https://send-email-sys-deploy.onrender.com/api/senders/add', [{
                 email,
                 appPassword,
                 dailyLimit,
@@ -111,7 +111,7 @@ const SenderManager = () => {
     const handleDelete = async (id: string) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
             try {
-                await axios.delete(`http://localhost:5000/api/senders/${id}`);
+                await axios.delete(`https://send-email-sys-deploy.onrender.com/api/senders/${id}`);
                 alert('Đã xóa tài khoản thành công!');
                 fetchSenders();
             } catch (error) {
@@ -124,7 +124,7 @@ const SenderManager = () => {
     // Hàm xử lý bật/tắt trạng thái hoạt động của tài khoản
     const toggleActive = async (sender: ISender) => {
         try {
-            await axios.put(`http://localhost:5000/api/senders/${sender._id}`, { isActive: !sender.isActive });
+            await axios.put(`https://send-email-sys-deploy.onrender.com/api/senders/${sender._id}`, { isActive: !sender.isActive });
             // alert(`Trạng thái của ${res.data.email} đã được cập nhật thành ${res.data.isActive ? 'Hoạt động' : 'Tạm ngưng'}.`);
             fetchSenders();
         } catch (error) {
@@ -137,7 +137,7 @@ const SenderManager = () => {
     const handleResetSentCounts = async () => {
         if (window.confirm('Bạn có chắc chắn muốn ĐẶT LẠI SỐ LƯỢNG ĐÃ GỬI của TẤT CẢ tài khoản về 0? Hành động này không thể hoàn tác!')) {
             try {
-                const res = await axios.post('http://localhost:5000/api/senders/reset-sent-counts');
+                const res = await axios.post('https://send-email-sys-deploy.onrender.com/api/senders/reset-sent-counts');
                 alert(res.data.message);
                 fetchSenders();
             } catch (error) {
@@ -167,7 +167,7 @@ const SenderManager = () => {
         formData.append('sendersFile', excelFile);
 
         try {
-            const res = await axios.post('http://localhost:5000/api/senders/upload-excel', formData, {
+            const res = await axios.post('https://send-email-sys-deploy.onrender.com/api/senders/upload-excel', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -191,7 +191,7 @@ const SenderManager = () => {
     const handleActivateAllSenders = async () => {
         if (window.confirm('Bạn có chắc chắn muốn kích hoạt TẤT CẢ tài khoản đang tạm ngưng?')) {
             try {
-                const res = await axios.post('http://localhost:5000/api/senders/activate-all');
+                const res = await axios.post('https://send-email-sys-deploy.onrender.com/api/senders/activate-all');
                 alert(res.data.message);
                 fetchSenders();
             } catch (error) {
@@ -205,7 +205,7 @@ const SenderManager = () => {
     const handleDeactivateAllSenders = async () => {
         if (window.confirm('Bạn có chắc chắn muốn tạm ngưng TẤT CẢ tài khoản đang hoạt động?')) {
             try {
-                const res = await axios.post('http://localhost:5000/api/senders/deactivate-all');
+                const res = await axios.post('https://send-email-sys-deploy.onrender.com/api/senders/deactivate-all');
                 alert(res.data.message);
                 fetchSenders();
             } catch (error) {
@@ -221,7 +221,7 @@ const SenderManager = () => {
         setTestResult(null);
         
         try {
-            const response = await axios.post(`http://localhost:5000/api/senders/test-connection/${senderId}`);
+            const response = await axios.post(`https://send-email-sys-deploy.onrender.com/api/senders/test-connection/${senderId}`);
             
             if (response.data.success) {
                 setTestResult({
@@ -891,7 +891,7 @@ const SenderManager = () => {
                                 onClick={async () => {
                                     setIsSaving(true);
                                     try {
-                                        await axios.put(`http://localhost:5000/api/senders/${editingSender._id}`, {
+                                        await axios.put(`https://send-email-sys-deploy.onrender.com/api/senders/${editingSender._id}`, {
                                             email: editingSender.email,
                                             appPassword: editingSender.appPassword,
                                             dailyLimit: editingSender.dailyLimit,

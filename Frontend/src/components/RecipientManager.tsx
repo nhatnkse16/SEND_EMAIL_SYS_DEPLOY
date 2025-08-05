@@ -65,7 +65,7 @@ const RecipientManager = () => {
     const fetchRecipients = async (status: string, page: number, pageSize: number, search: string) => {
         try {
             setIsLoading(true);
-            const res = await axios.get('http://localhost:5000/api/recipients', {
+            const res = await axios.get('https://send-email-sys-deploy.onrender.com/api/recipients', {
                 params: { status, page, pageSize, search }
             });
             return res.data;
@@ -86,7 +86,7 @@ const RecipientManager = () => {
         }
 
         try {
-            await axios.post('http://localhost:5000/api/recipients', { email: newEmail, name: newName });
+            await axios.post('https://send-email-sys-deploy.onrender.com/api/recipients', { email: newEmail, name: newName });
             alert('Đã thêm người nhận thành công!');
             setNewEmail('');
             setNewName('');
@@ -104,7 +104,7 @@ const RecipientManager = () => {
     const handleDelete = async (id: string) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa người nhận này?')) {
             try {
-                await axios.delete(`http://localhost:5000/api/recipients/${id}`);
+                await axios.delete(`https://send-email-sys-deploy.onrender.com/api/recipients/${id}`);
                 alert('Đã xóa người nhận thành công!');
                 fetchTotalCounts(); // Gọi hàm để cập nhật tổng số
                 if (activeTab === 'pending') fetchRecipients('pending', pendingPage, pageSize, search).then(setPendingData);
@@ -121,7 +121,7 @@ const RecipientManager = () => {
     const handleClearAll = async () => {
         if (window.confirm('Bạn có chắc chắn muốn XÓA TẤT CẢ người nhận? Hành động này không thể hoàn tác!')) {
             try {
-                await axios.delete('http://localhost:5000/api/recipients/clear');
+                await axios.delete('https://send-email-sys-deploy.onrender.com/api/recipients/clear');
                 alert('Đã xóa tất cả người nhận thành công!');
                 fetchTotalCounts(); // Gọi hàm để cập nhật tổng số
                 if (activeTab === 'pending') fetchRecipients('pending', pendingPage, pageSize, search).then(setPendingData);
@@ -138,7 +138,7 @@ const RecipientManager = () => {
     const handleResetStatus = async () => {
         if (window.confirm('Bạn có chắc chắn muốn ĐẶT LẠI TRẠNG THÁI của tất cả người nhận về "pending"?')) {
             try {
-                await axios.post('http://localhost:5000/api/recipients/reset-status');
+                await axios.post('https://send-email-sys-deploy.onrender.com/api/recipients/reset-status');
                 alert('Đã đặt lại trạng thái tất cả người nhận thành công!');
                 fetchTotalCounts(); // Gọi hàm để cập nhật tổng số
                 if (activeTab === 'pending') fetchRecipients('pending', pendingPage, pageSize, search).then(setPendingData);
@@ -171,7 +171,7 @@ const RecipientManager = () => {
 
         try {
             setIsUploading(true); // Bắt đầu trạng thái upload
-            const res = await axios.post('http://localhost:5000/api/recipients/upload-csv', formData, {
+            const res = await axios.post('https://send-email-sys-deploy.onrender.com/api/recipients/upload-csv', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data', // Quan trọng cho việc upload file
                 },
@@ -256,7 +256,7 @@ const RecipientManager = () => {
     const handleResetStatusOne = async (id: string) => {
         if (window.confirm('Bạn có chắc chắn muốn đặt lại trạng thái người nhận này về "pending"?')) {
             try {
-                await axios.patch(`http://localhost:5000/api/recipients/${id}/reset-status`);
+                await axios.patch(`https://send-email-sys-deploy.onrender.com/api/recipients/${id}/reset-status`);
                 alert('Đã đặt lại trạng thái thành pending!');
                 fetchTotalCounts();
                 if (activeTab === 'pending') fetchRecipients('pending', pendingPage, pageSize, search).then(setPendingData);
@@ -272,7 +272,7 @@ const RecipientManager = () => {
     const handleResetSentStatus = async () => {
         if (window.confirm('Bạn có chắc chắn muốn đặt lại trạng thái TẤT CẢ email đã gửi về "pending"?')) {
             try {
-                const res = await axios.post('http://localhost:5000/api/recipients/reset-sent-status');
+                const res = await axios.post('https://send-email-sys-deploy.onrender.com/api/recipients/reset-sent-status');
                 alert(res.data.message);
                 fetchTotalCounts();
                 if (activeTab === 'pending') fetchRecipients('pending', pendingPage, pageSize, search).then(setPendingData);
@@ -289,7 +289,7 @@ const RecipientManager = () => {
     const handleResetFailedStatus = async () => {
         if (window.confirm('Bạn có chắc chắn muốn đặt lại trạng thái TẤT CẢ email lỗi về "pending"?')) {
             try {
-                const res = await axios.post('http://localhost:5000/api/recipients/reset-failed-status');
+                const res = await axios.post('https://send-email-sys-deploy.onrender.com/api/recipients/reset-failed-status');
                 alert(res.data.message);
                 fetchTotalCounts();
                 if (activeTab === 'pending') fetchRecipients('pending', pendingPage, pageSize, search).then(setPendingData);

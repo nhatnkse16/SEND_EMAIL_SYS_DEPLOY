@@ -84,7 +84,7 @@ const CampaignSender = () => {
     useEffect(() => {
         const fetchTemplates = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/templates');
+                const res = await axios.get('https://send-email-sys-deploy.onrender.com/api/templates');
                 setTemplates(res.data);
                 console.log("Templates đã tải từ backend:", res.data); // Log templates đã tải
             } catch (error) {
@@ -149,7 +149,7 @@ const CampaignSender = () => {
         // Thêm log viewer mới
         setLogViewers(viewers => [...viewers, { jobId, logs: [], status: 'running', failedEmails: [] }]);
         // Mở SSE
-        const sse = new EventSource(`http://localhost:5000/api/campaign/log-stream?jobId=${jobId}`);
+        const sse = new EventSource(`https://send-email-sys-deploy.onrender.com/api/campaign/log-stream?jobId=${jobId}`);
         sse.onmessage = (e) => {
             try {
                 const log = JSON.parse(e.data);
@@ -214,7 +214,7 @@ const CampaignSender = () => {
             // setLogs(logs => [...logs, 'Bắt đầu gửi chiến dịch...']); // This line is removed as logs state is replaced by logViewers
 
             // Gửi yêu cầu POST đến API gửi chiến dịch
-            const res = await axios.post('http://localhost:5000/api/campaign/send', {
+            const res = await axios.post('https://send-email-sys-deploy.onrender.com/api/campaign/send', {
                 selectedTemplateIds, // Mảng các ID của mẫu đã chọn
                 brandName,
                 minDelay,
@@ -261,11 +261,11 @@ const CampaignSender = () => {
         if (!jobId) return;
         if (!isPaused) {
             // Gọi API pause
-            await axios.post('http://localhost:5000/api/campaign/pause', { jobId });
+            await axios.post('https://send-email-sys-deploy.onrender.com/api/campaign/pause', { jobId });
             setIsPaused(true);
         } else {
             // Gọi API resume
-            await axios.post('http://localhost:5000/api/campaign/resume', { jobId });
+            await axios.post('https://send-email-sys-deploy.onrender.com/api/campaign/resume', { jobId });
             setIsPaused(false);
         }
     };
