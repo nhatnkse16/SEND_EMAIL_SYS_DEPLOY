@@ -49,6 +49,10 @@ const SenderManager = () => {
     // Thêm state loading cho nút Lưu
     const [isSaving, setIsSaving] = useState(false);
 
+    // Thêm state cho test connection
+    const [testingConnection, setTestingConnection] = useState<string | null>(null);
+    const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
     // Hàm để lấy danh sách tài khoản từ backend
     const fetchSenders = async () => {
         try {
@@ -120,7 +124,7 @@ const SenderManager = () => {
     // Hàm xử lý bật/tắt trạng thái hoạt động của tài khoản
     const toggleActive = async (sender: ISender) => {
         try {
-            const res = await axios.put(`http://localhost:5000/api/senders/${sender._id}`, { isActive: !sender.isActive });
+            await axios.put(`http://localhost:5000/api/senders/${sender._id}`, { isActive: !sender.isActive });
             // alert(`Trạng thái của ${res.data.email} đã được cập nhật thành ${res.data.isActive ? 'Hoạt động' : 'Tạm ngưng'}.`);
             fetchSenders();
         } catch (error) {
@@ -211,6 +215,39 @@ const SenderManager = () => {
         }
     };
 
+    // Hàm test connection
+    const handleTestConnection = async (senderId: string) => {
+        setTestingConnection(senderId);
+        setTestResult(null);
+        
+        try {
+            const response = await axios.post(`http://localhost:5000/api/senders/test-connection/${senderId}`);
+            
+            if (response.data.success) {
+                setTestResult({
+                    success: true,
+                    message: response.data.message
+                });
+                alert(`✅ ${response.data.message}`);
+            } else {
+                setTestResult({
+                    success: false,
+                    message: response.data.message
+                });
+                alert(`❌ ${response.data.message}`);
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Lỗi khi test kết nối';
+            setTestResult({
+                success: false,
+                message: errorMessage
+            });
+            alert(`❌ ${errorMessage}`);
+        } finally {
+            setTestingConnection(null);
+        }
+    };
+
     // Lọc và tìm kiếm tài khoản gửi
     const filteredSenders = senders.filter(s => {
         const keyword = search.toLowerCase();
@@ -218,7 +255,6 @@ const SenderManager = () => {
             s.email.toLowerCase().includes(keyword)
         );
     });
-    const totalPages = Math.ceil(filteredSenders.length / pageSize);
 
     // Tách danh sách sender theo trạng thái
     const activeSenders = filteredSenders.filter(s => s.isActive);
@@ -525,6 +561,42 @@ const SenderManager = () => {
                                                         <TrashIcon />
                                                         <span style={{ fontWeight: 500 }}>Xoá</span>
                                                     </button>
+                                                    <button
+                                                        onClick={() => handleTestConnection(sender._id)}
+                                                        className={shared.btnSecondary}
+                                                        style={{
+                                                            padding: '6px 12px',
+                                                            fontSize: 15,
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: 6,
+                                                            borderRadius: 6,
+                                                            background: '#e9ecef',
+                                                            color: '#495057',
+                                                            border: 'none',
+                                                            boxShadow: '0 1px 4px rgba(108,117,125,0.07)',
+                                                            transition: 'background 0.2s, color 0.2s',
+                                                            cursor: 'pointer',
+                                                            marginLeft: 8
+                                                        }}
+                                                        title="Test kết nối"
+                                                    >
+                                                        ⚙️ <span style={{ fontWeight: 500 }}>Test</span>
+                                                    </button>
+                                                    {testingConnection === sender._id && testResult && (
+                                                        <div style={{
+                                                            marginTop: 8,
+                                                            padding: '8px 12px',
+                                                            borderRadius: 6,
+                                                            background: testResult.success ? '#d4edda' : '#f8d7da',
+                                                            color: testResult.success ? '#28a745' : '#c82333',
+                                                            fontSize: 14,
+                                                            fontWeight: 500,
+                                                            border: `1px solid ${testResult.success ? '#28a745' : '#c82333'}`
+                                                        }}>
+                                                            {testResult.message}
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))
@@ -657,7 +729,8 @@ const SenderManager = () => {
                                                             border: 'none',
                                                             boxShadow: '0 1px 4px rgba(220,53,69,0.07)',
                                                             transition: 'background 0.2s, color 0.2s',
-                                                            cursor: 'pointer'
+                                                            cursor: 'pointer',
+                                                            marginRight: 8
                                                         }}
                                                         onMouseOver={e => { e.currentTarget.style.background = '#f1b0b7'; e.currentTarget.style.color = '#fff'; }}
                                                         onMouseOut={e => { e.currentTarget.style.background = '#f8d7da'; e.currentTarget.style.color = '#c82333'; }}
@@ -665,6 +738,31 @@ const SenderManager = () => {
                                                     >
                                                         <TrashIcon />
                                                         <span style={{ fontWeight: 500 }}>Xoá</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleTestConnection(sender._id)}
+                                                        disabled={testingConnection === sender._id}
+                                                        className={shared.btnSecondary}
+                                                        style={{
+                                                            padding: '6px 12px',
+                                                            fontSize: 15,
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: 6,
+                                                            borderRadius: 6,
+                                                            background: testingConnection === sender._id ? '#6c757d' : '#e9ecef',
+                                                            color: testingConnection === sender._id ? '#fff' : '#495057',
+                                                            border: 'none',
+                                                            boxShadow: '0 1px 4px rgba(108,117,125,0.07)',
+                                                            transition: 'background 0.2s, color 0.2s',
+                                                            cursor: testingConnection === sender._id ? 'not-allowed' : 'pointer'
+                                                        }}
+                                                        title="Test kết nối SMTP"
+                                                    >
+                                                        {testingConnection === sender._id ? '⏳' : '⚙️'} 
+                                                        <span style={{ fontWeight: 500 }}>
+                                                            {testingConnection === sender._id ? 'Testing...' : 'Test'}
+                                                        </span>
                                                     </button>
                                                 </td>
                                             </tr>

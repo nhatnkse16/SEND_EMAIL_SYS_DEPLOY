@@ -39,7 +39,6 @@ interface ITemplate {
 
 const TemplateManager = () => {
     const [templates, setTemplates] = useState<ITemplate[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     // State cho form thêm mới
     const [name, setName] = useState('');
@@ -68,14 +67,11 @@ const TemplateManager = () => {
     // <<< PHẦN LOGIC FETCH ĐÃ ĐƯỢC THÊM VÀO >>>
     const fetchTemplates = async () => {
         try {
-            setIsLoading(true);
             const res = await axios.get('http://localhost:5000/api/templates');
             setTemplates(res.data);
         } catch (error) {
             console.error("Lỗi khi tải mẫu email:", error);
             setToast({ message: 'Không thể tải danh sách mẫu email.', type: 'error' });
-        } finally {
-            setIsLoading(false);
         }
     };
 

@@ -11,7 +11,7 @@ interface IRecipient {
 }
 
 const RecipientManager = () => {
-    const [recipients, setRecipients] = useState<IRecipient[]>([]);
+    // const [recipients] = useState<IRecipient[]>([]); // Không dùng nữa
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     // State cho form thêm mới người nhận thủ công
@@ -32,32 +32,10 @@ const RecipientManager = () => {
     // Thêm lại state search
     const [search, setSearch] = useState('');
 
-    // Tách danh sách recipient theo trạng thái
-    const pendingRecipients = recipients.filter(r => r.status === 'pending');
-    const sentRecipients = recipients.filter(r => r.status === 'sent');
-    const failedRecipients = recipients.filter(r => r.status === 'failed');
-
-    // Hàm lấy danh sách người nhận từ API (theo status, page, pageSize)
-    const fetchRecipients = async (status: string, page: number, pageSize: number, search: string) => {
-        try {
-            setIsLoading(true);
-            const res = await axios.get('http://localhost:5000/api/recipients', {
-                params: { status, page, pageSize, search }
-            });
-            return res.data;
-        } catch (error) {
-            console.error('Lỗi khi tải danh sách người nhận:', error);
-            alert('Không thể tải danh sách người nhận. Vui lòng kiểm tra lại backend.');
-            return { recipients: [], total: 0 };
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     // State cho từng tab
-    const [pendingData, setPendingData] = useState({ recipients: [], total: 0 });
-    const [sentData, setSentData] = useState({ recipients: [], total: 0 });
-    const [failedData, setFailedData] = useState({ recipients: [], total: 0 });
+    const [pendingData, setPendingData] = useState<{ recipients: IRecipient[], total: number }>({ recipients: [], total: 0 });
+    const [sentData, setSentData] = useState<{ recipients: IRecipient[], total: number }>({ recipients: [], total: 0 });
+    const [failedData, setFailedData] = useState<{ recipients: IRecipient[], total: number }>({ recipients: [], total: 0 });
 
     // Thêm state tổng số cho từng tab
     const [pendingTotal, setPendingTotal] = useState(0);
@@ -83,6 +61,23 @@ const RecipientManager = () => {
         fetchTotalCounts();
     }, []);
 
+    // Hàm lấy danh sách người nhận từ API (theo status, page, pageSize)
+    const fetchRecipients = async (status: string, page: number, pageSize: number, search: string) => {
+        try {
+            setIsLoading(true);
+            const res = await axios.get('http://localhost:5000/api/recipients', {
+                params: { status, page, pageSize, search }
+            });
+            return res.data;
+        } catch (error) {
+            console.error('Lỗi khi tải danh sách người nhận:', error);
+            alert('Không thể tải danh sách người nhận. Vui lòng kiểm tra lại backend.');
+            return { recipients: [], total: 0 };
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // Hàm xử lý thêm người nhận thủ công
     const handleAddRecipient = async () => {
         if (!newEmail.trim()) {
@@ -91,7 +86,7 @@ const RecipientManager = () => {
         }
 
         try {
-            const res = await axios.post('http://localhost:5000/api/recipients', { email: newEmail, name: newName });
+            await axios.post('http://localhost:5000/api/recipients', { email: newEmail, name: newName });
             alert('Đã thêm người nhận thành công!');
             setNewEmail('');
             setNewName('');

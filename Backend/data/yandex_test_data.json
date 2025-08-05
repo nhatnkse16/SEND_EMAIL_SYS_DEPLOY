@@ -1,0 +1,12 @@
+[
+    {
+        "email": "test@yandex.com",
+        "appPassword": "your-app-password-here",
+        "host": "smtp.yandex.com",
+        "port": 465,
+        "secure": true,
+        "dailyLimit": 100,
+        "batchSize": 10,
+        "isActive": true
+    }
+] 

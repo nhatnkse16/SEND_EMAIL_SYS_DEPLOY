@@ -6,6 +6,7 @@ import RecipientManager from './components/RecipientManager';
 import SenderManager from './components/SenderManager';
 import LogViewer from './components/LogViewer';
 import TemplateManager from './components/TemplateManager';
+import EmailManager from './components/EmailManager';
 
 // Import shared.module.css để sử dụng các class cho layout chính
 import styles from './components/shared.module.css';
@@ -32,6 +33,8 @@ function App() {
         return <LogViewer />;
       case 'templates':
         return <TemplateManager />;
+      case 'inbox':
+        return <EmailManager onNavigateToSenders={() => setActiveView('senders')} />;
       case 'campaign':
       default:
         return <CampaignSender />;

@@ -338,7 +338,7 @@ const CampaignSender = () => {
     }, []);
 
     // Xử lý kéo
-    const onDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    const onDragStart = (_e: React.MouseEvent | React.TouchEvent) => {
         dragging.current = true;
         document.body.style.userSelect = 'none';
     };

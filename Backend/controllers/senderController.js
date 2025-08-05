@@ -1,5 +1,6 @@
 const Sender = require('../models/senderModel');
 const xlsx = require('xlsx');
+const nodemailer = require('nodemailer');
 
 const getSenders = async (req, res) => {
     try {
@@ -201,7 +202,103 @@ const deactivateAllSenders = async (req, res) => {
     }
 };
 
+// --- HÀM MỚI: TEST CONNECTION ---
+const testConnection = async (req, res) => {
+    try {
+        const { senderId } = req.params;
+        
+        // Lấy thông tin sender từ database
+        const sender = await Sender.findById(senderId);
+        if (!sender) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Không tìm thấy tài khoản gửi' 
+            });
+        }
+
+        // Tạo transporter để test connection
+        const transporter = nodemailer.createTransport({
+            host: sender.host,
+            port: sender.port,
+            secure: sender.secure,
+            auth: {
+                user: sender.email,
+                pass: sender.appPassword
+            },
+            // Thêm timeout để tránh chờ quá lâu
+            connectionTimeout: 10000, // 10 giây
+            greetingTimeout: 10000,
+            socketTimeout: 10000
+        });
+
+        // Test connection
+        await transporter.verify();
+        
+        // Nếu thành công, thử gửi test email (optional)
+        try {
+            const testResult = await transporter.sendMail({
+                from: sender.email,
+                to: sender.email, // Gửi cho chính mình để test
+                subject: 'Test Connection - Email System',
+                text: 'Đây là email test để kiểm tra kết nối SMTP. Nếu bạn nhận được email này, kết nối đã thành công!',
+                html: `
+                    <h3>Test Connection - Email System</h3>
+                    <p>Đây là email test để kiểm tra kết nối SMTP.</p>
+                    <p>Nếu bạn nhận được email này, kết nối đã thành công!</p>
+                    <p><strong>Thông tin kết nối:</strong></p>
+                    <ul>
+                        <li>Host: ${sender.host}</li>
+                        <li>Port: ${sender.port}</li>
+                        <li>Secure: ${sender.secure ? 'Yes' : 'No'}</li>
+                        <li>Email: ${sender.email}</li>
+                    </ul>
+                `
+            });
+
+            res.status(200).json({
+                success: true,
+                message: 'Kết nối thành công! Email test đã được gửi.',
+                data: {
+                    senderId: sender._id,
+                    email: sender.email,
+                    host: sender.host,
+                    port: sender.port,
+                    secure: sender.secure,
+                    testEmailId: testResult.messageId
+                }
+            });
+
+        } catch (sendError) {
+            // Nếu gửi email thất bại nhưng verify thành công
+            res.status(200).json({
+                success: true,
+                message: 'Kết nối SMTP thành công nhưng gửi email test thất bại',
+                warning: sendError.message,
+                data: {
+                    senderId: sender._id,
+                    email: sender.email,
+                    host: sender.host,
+                    port: sender.port,
+                    secure: sender.secure
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error('Test connection error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Kết nối thất bại',
+            error: error.message,
+            details: {
+                code: error.code,
+                command: error.command
+            }
+        });
+    }
+};
+
 module.exports = {
     getSenders, addSenders, updateSender, deleteSender, resetSentCounts, addSendersFromExcel,
-    activateAllSenders, deactivateAllSenders
+    activateAllSenders, deactivateAllSenders, testConnection
 };

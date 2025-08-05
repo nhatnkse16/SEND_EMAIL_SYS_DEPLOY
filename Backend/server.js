@@ -19,16 +19,18 @@ app.use(cors()); // Enable CORS
 // Import routes
 const campaignRoutes = require('./routes/campaignRoutes');
 const senderRoutes = require('./routes/senderRoutes');
-const recipientRoutes = require('./routes/recipientRoutes'); // New import
-const templateRoutes = require('./routes/templateRoutes'); // New import
-const logRoutes = require('./routes/logRoutes'); // New import
+const recipientRoutes = require('./routes/recipientRoutes');
+const templateRoutes = require('./routes/templateRoutes');
+const logRoutes = require('./routes/logRoutes');
+const emailRoutes = require('./routes/emailRoutes'); // New email routes
 
 // Use routes
 app.use('/api/campaign', campaignRoutes);
-app.use('/api/senders', senderRoutes); // Corrected path for senders
-app.use('/api/recipients', recipientRoutes); // New route
-app.use('/api/templates', templateRoutes); // New route
-app.use('/api/logs', logRoutes); // New route
+app.use('/api/senders', senderRoutes);
+app.use('/api/recipients', recipientRoutes);
+app.use('/api/templates', templateRoutes);
+app.use('/api/logs', logRoutes);
+app.use('/api/emails', emailRoutes); // New email routes
 
 // Basic route for testing
 app.get('/', (req, res) => {

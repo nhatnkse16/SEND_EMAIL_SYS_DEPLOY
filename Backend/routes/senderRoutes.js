@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer'); // Import multer
-const { getSenders, addSenders, updateSender, deleteSender, resetSentCounts, addSendersFromExcel, activateAllSenders, deactivateAllSenders } = require('../controllers/senderController');
+const { getSenders, addSenders, updateSender, deleteSender, resetSentCounts, addSendersFromExcel, activateAllSenders, deactivateAllSenders, testConnection } = require('../controllers/senderController');
 
 // Cấu hình Multer để lưu file vào bộ nhớ (không lưu vào đĩa)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -15,5 +15,6 @@ router.post('/reset-sent-counts', resetSentCounts);
 router.post('/activate-all', activateAllSenders); // Thêm route kích hoạt tất cả
 router.post('/deactivate-all', deactivateAllSenders); // Thêm route tạm ngưng tất cả
 router.post('/upload-excel', upload.single('sendersFile'), addSendersFromExcel); // <-- Thêm route này
+router.post('/test-connection/:senderId', testConnection); // Thêm route test connection
 
 module.exports = router;

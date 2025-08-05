@@ -10,14 +10,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@heroicons/react": "^2.2.0",
-    "@mui/material": "^7.2.0",
-    "@mui/x-data-grid": "^8.9.1",
     "axios": "^1.10.0",
+    "date-fns": "^3.6.0",
+    "framer-motion": "^11.10.8",
+    "lucide-react": "^0.468.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-dropzone": "^14.2.3",
+    "react-hook-form": "^7.53.2",
+    "react-hot-toast": "^2.4.1",
+    "react-markdown": "^9.0.1",
+    "react-query": "^3.39.3",
+    "react-router-dom": "^6.28.0",
+    "react-syntax-highlighter": "^15.5.0",
     "recharts": "^3.1.0"
   },
   "devDependencies": {
